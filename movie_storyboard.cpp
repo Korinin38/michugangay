@@ -3,7 +3,7 @@
     using namespace std;
 
     CONST COLORREF MYOWN_COLOR1 = TX_BLACK;
-    CONST COLORREF MYOWN_COLOR2 = MYOWN_COLOR1;
+    CONST COLORREF MYOWN_COLOR2 = TX_WHITE;
 
     void LogoPS(bool);
 
@@ -27,22 +27,57 @@
         {
             txSetColor(TX_WHITE);
             txSetFillColor(TX_WHITE);
-            txCircle (500, 300, 150);
-            for (i=0; i<10; i++)
+
+            for (int i=-4; i<17; i++)
             {
-                switch(i)
-                case 3:
+                txSetColor(TX_WHITE);
+                txSetFillColor(TX_WHITE);
+                txCircle (500, 300, 150);
+                if (i>0)
+                {
+                    txSetColor(MYOWN_COLOR1, 3);
+                    txSetFillColor(TX_TRANSPARENT);
+                    txCircle(470, 348, 2);
+                    txCircle(580, 348, 2);
+                    txLine(430, 350, 430, 225);
+                    txChord(481, 300, 381, 225, -90, 180);
 
+                    txChord(500, 287, 600, 227, 50, 210);
+                    txChord(480, 285, 580, 350, 225, 215);
+                    txSetColor(MYOWN_COLOR2, 4);
+                    txLine(545, 283, 571, 233);
+                    txLine(534, 288, 504, 341);
 
-
-
-                    break;
-                case 4:
-
-
-
-
-                    break;
+                    txSetColor(MYOWN_COLOR1, 3);
+                    txSetTextAlign(TA_CENTER);
+                    txSelectFont("Comic Sans MS", 40, 12, false, true, false, false, 10);
+                    switch (i)
+                    {
+                        case 4:
+                            txTextOut(495, 380, "p");
+                            break;
+                        case 5:
+                            txTextOut(495, 380, "pr");
+                            break;
+                        case 6:
+                            txTextOut(495, 380, "pre");
+                            break;
+                        case 7:
+                            txTextOut(495, 380, "pres");
+                            break;
+                        case 8:
+                            txTextOut(495, 380, "prese");
+                            break;
+                        case 9:
+                            txTextOut(495, 380, "presen");
+                            break;
+                        case 10:
+                            txTextOut(495, 380, "present");
+                            break;
+                    }
+                    if (i>10) txTextOut(495, 380, "presents");
+                }
+                txSleep(100);
             }
         }
     }
