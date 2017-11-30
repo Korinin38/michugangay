@@ -3,62 +3,152 @@
     using namespace std;
 
     CONST COLORREF MYOWN_COLOR1 = TX_BLACK;
-    CONST COLORREF MYOWN_COLOR2 = MYOWN_COLOR1;
-    int GoGoCi(int radius = 50, int length = 100, int amount = 1);
+    CONST COLORREF MYOWN_COLOR2 = TX_WHITE;
+
+    void LogoPS(bool);
+    void Ryab(int);
 
     int main()
     {
-        txCreateWindow (1000, 700);
+        txCreateWindow (1000, 600);
         txSetColor(TX_WHITE);
         txSetFillColor(TX_WHITE);
-        GoGoCi(50, 840);
+        /*LogoPS(0);
+        LogoPS(1);  */
+        Ryab(60);
         return 0;
     }
 
+//=============================================================================
 
-    int GoGoCi(int radius, int length, int amount)
+
+
+    void Ryab(int a = 1)
     {
-        int i = 2*radius+20, s=0;
-        while (1)
+        int i, j;
+        txSetFillColor(TX_WHITE);
+        txClear();
+        for (int k=1; k<=100; k++)
         {
-            int z;
-            txSetFillColor(MYOWN_COLOR1);
-            txClear();
-            for (int a=0; a<amount; a++)
+            COLORREF KEK;
+            for (i=1; i<1000; i+=a)
+            for (j=1; j<600; j+=a)
+            {
+                KEK = RGB(rand()%255, rand()%255, rand()%255);
+                txSetColor(KEK);
+                txSetFillColor(KEK);
+                txRectangle(i, j, i+a, j+a);
+
+            }
+            txSleep(a);
+        }
+    }
+
+
+
+
+//-----------------------------------------------------------------------------
+
+    void LogoPS(bool stage)
+    {
+        int i;
+        if (stage==true)
+        {
+            txSetColor(TX_WHITE);
+            txSetFillColor(TX_WHITE);
+
+            for (i=-4; i<17; i++)
             {
                 txSetColor(TX_WHITE);
                 txSetFillColor(TX_WHITE);
-                txCircle(radius+20+i, radius+20+(2*radius+20)*(a), radius);
-                if (i<2*radius+40)
+                txCircle (500, 300, 150);
+                if (i>0)
                 {
-                    z=2*radius+20-i;
-                    if (z>radius) z=radius;
-                    if (z<0) z=0;
-                    txLine(length+radius+20, radius+20-z+(2*radius+20)*a, length+radius+20, radius+20+z+(2*radius+20)*a);
-                    txLine(radius+20, radius+20-z+(2*radius+20)*a, radius+20, radius+20+z+(2*radius+20)*a);
-                    txCircle(radius+19+length+i, radius+(2*radius+20)*(a)+20, radius);
-                    txSetColor(MYOWN_COLOR2);
-                    txSetFillColor(MYOWN_COLOR1);
-                    txRectangle(length+radius+21, 20, 5*length+21, (2*radius+20)*(a+1));
-                    txRectangle(0, 20, radius+19, (2*radius+20)*(a+1));
-                }
+                    txSetColor(MYOWN_COLOR1, 3);
+                    txSetFillColor(TX_TRANSPARENT);
+                    txCircle(470, 348, 2);
+                    txCircle(580, 348, 2);
+                    txLine(430, 350, 430, 225);
+                    txChord(481, 300, 381, 225, -90, 180);
 
-                if (i>length-2*radius-20)
-                {
-                    z=i-length+radius+40;
-                    if (z>radius) z=radius;
-                    if (z<0) z=0;
-                    txLine(length+radius+20, radius+20-z+(2*radius+20)*a, length+radius+20, radius+20+z+(2*radius+20)*a);
-                    txLine(radius+20, radius+20-z+(2*radius+20)*a, radius+20, radius+20+z+(2*radius+20)*a);
-                    if (length-i<radius) txCircle(radius+20+i-length, radius+(2*radius+20)*(a)+20, radius);
-                    txSetColor(MYOWN_COLOR2);
-                    txSetFillColor(MYOWN_COLOR1);
-                    txRectangle(length+radius+21, 20, 5*length+21, (2*radius+20)*(a+1));
-                    txRectangle(0, 20, radius+19, (2*radius+20)*(a+1));
+                    txChord(500, 287, 600, 227, 50, 210);
+                    txChord(480, 285, 580, 350, 225, 215);
+                    txSetColor(MYOWN_COLOR2, 4);
+                    txLine(545, 283, 571, 233);
+                    txLine(534, 288, 504, 341);
+
+                    txSetColor(MYOWN_COLOR1, 3);
+                    txSetTextAlign(TA_CENTER);
+                    txSelectFont("Comic Sans MS", 40, 12, false, true, false, false, 10);
+                    switch (i)
+                    {
+                        case 4:
+                            txTextOut(495, 380, "p");
+                            break;
+                        case 5:
+                            txTextOut(495, 380, "pr");
+                            break;
+                        case 6:
+                            txTextOut(495, 380, "pre");
+                            break;
+                        case 7:
+                            txTextOut(495, 380, "pres");
+                            break;
+                        case 8:
+                            txTextOut(495, 380, "prese");
+                            break;
+                        case 9:
+                            txTextOut(495, 380, "presen");
+                            break;
+                        case 10:
+                            txTextOut(495, 380, "present");
+                            break;
+                    }
+                    if (i>10) txTextOut(495, 380, "presents");
                 }
+                txSleep(100);
             }
-            Sleep(33);
-            if (i>=length-1){i=0;s++;}
-            i+=5;
+        }
+        else
+        {
+            txSetColor(TX_WHITE, 3);
+            txSetFillColor(TX_BLACK);
+            txClear();
+            txSetFillColor(TX_WHITE);
+            txLine(500, 299, 500, 301);
+            for (i=2; i<128;)
+            {
+                txLine(500, 301-i, 500, 299+i);
+                i+=i-1;
+                txSleep(60);
+            }
+            txLine(500, 159, 500, 441);
+            txSleep(60);
+            txLine(500, 153, 500, 447);
+            txSleep(60);
+            txLine(500, 150, 500, 450);
+            txSleep(400);
+            int ugol;
+            txPie(350, 150, 650, 450, 90, 1);
+            txPie(350, 150, 650, 450, 270, 1);
+            for (ugol=2; ugol<=129;)
+            {
+                txPie(351, 151, 649, 449, 90, ugol);
+                txPie(351, 151, 649, 449, 270, ugol);
+                ugol+=ugol-1;
+                txSleep(60);
+            }
+            for (ugol=176; ugol<180;)
+            {
+                txPie(351, 151, 649, 449, 90, ugol);
+                txPie(351, 151, 649, 449, 270, ugol);
+                ugol+=(180-ugol)/1.7;
+                if (ugol>175) ugol=180;
+                txSleep(60);
+            }
+
+
+            txSetFillColor(TX_BLACK);
+            txClear();
         }
     }
