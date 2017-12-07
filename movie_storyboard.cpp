@@ -2,11 +2,14 @@
     #include "TXLib.h"
     using namespace std;
 
-    CONST COLORREF MYOWN_COLOR1 = TX_BLACK;
-    CONST COLORREF MYOWN_COLOR2 = TX_WHITE;
+    CONST COLORREF  MYOWN_COLOR1 = TX_BLACK,
+                    MYOWN_COLOR2 = TX_WHITE;
+
+    COLORREF OGRBLU, OGRHAT, WALLFILL;
 
     void LogoPS(bool);
     void ToBeContinued();
+    void Ryab();
 
     int main()
     {
@@ -18,7 +21,9 @@
         {
             LogoPS(i);
             i=(i+1)%2;
+
         }
+        Ryab();
         return 0;
     }
 
@@ -32,8 +37,9 @@
         if (stage==true)
         {
             txSetColor(TX_WHITE);
+            txSetFillColor(TX_BLACK);
+            txClear();
             txSetFillColor(TX_WHITE);
-
             for (i=-4; i<17; i++)
             {
                 txSetColor(TX_WHITE);
@@ -123,10 +129,34 @@
                 if (ugol>175) ugol=180;
                 txSleep(60);
             }
+        }
+    }
 
 
-            txSetFillColor(TX_BLACK);
-            txClear();
+//-----------------------------------------------------------------------------
+
+    void Ryab()
+    {
+        COLORREF kek;
+        int a[3];
+        for (int i = 0; i<10; i++)
+        {
+
+
+            for (int j=0; j<1000; j+=3)
+            {
+                for (int k=0; k<600; k+=3)
+                    {
+                        a[0]=rand()%16*15;
+                        a[1]=rand()%16*15;
+                        a[2]=rand()%16*15;
+                        kek=RGB(a[0],a[1],a[2]);
+                        txSetColor(kek);
+                        txSetFillColor(kek);
+                        txRectangle(j,k,j+3,k+3);
+                    }
+            }
+            txSleep(20);
         }
     }
 
@@ -135,5 +165,29 @@
 
     void ToBeContinued()
     {
-    
+        txSetFillColor(WALLFILL);
+        for(int i = 0; i<4; i++)
+        {
+            for(int q = 0; q<24; q++)
+            {
+                Wall(q);
+                Ogr(q);
+                txSleep(40);
+            }
+        }
+
+        for (int i = 0; i < 12; i++)
+        {
+            if (i==11)
+            {
+                OGRBLU = RGB();
+                OGRHAT = RGB();
+                WALLFILL = RGB();
+                txSleep(5000);
+            }
+            Wall(q, 1);
+            Ogr(q);
+            txSleep(40);
+
+        }
     }
