@@ -6,6 +6,7 @@
     CONST COLORREF MYOWN_COLOR2 = TX_WHITE;
 
     void LogoPS(bool);
+    void ToBeContinued();
 
     int main()
     {
@@ -20,6 +21,10 @@
         }
         return 0;
     }
+
+
+
+//=============================================================================
 
     void LogoPS(bool stage)
     {
@@ -123,4 +128,12 @@
             txSetFillColor(TX_BLACK);
             txClear();
         }
+    }
+
+
+//-----------------------------------------------------------------------------
+
+    void ToBeContinued()
+    {
+    
     }
