@@ -1,4 +1,4 @@
-    #include <iostream>
+     #include <iostream>
     #include "TXLib.h"
     using namespace std;
 
@@ -11,6 +11,7 @@
     void ToBeContinued();
     void Ryab();
     void Ogr(int);
+    void Wall(int, bool z=0);
 
     int main()
     {
@@ -22,7 +23,6 @@
         {
             LogoPS(i);
             i=(i+1);
-
         }
         Ryab();*/
         ToBeContinued();
@@ -175,7 +175,7 @@
             {
                 txSetFillColor(WALLFILL);
                 txClear();
-        //        Wall(q);
+                Wall(q);
                 Ogr(q);
                 txSleep(40);
             }
@@ -190,7 +190,9 @@
           //      WALLFILL = RGB();
                 txSleep(5000);
             }
-          //  Wall(q, 1);
+            txSetFillColor(WALLFILL);
+            txClear();
+            Wall(i, 1);
             Ogr(i);
             txSleep(40);
 
@@ -215,4 +217,19 @@
         txSetFillColour(TX_BROWN);
         txPolygon(cloak, 25);
         txPolygon(head, 22);
+    }
+    void Wall(int a, bool z)
+    {
+        txSetColor(TX_BLACK);
+        txSetFillColor(TX_BLACK);
+        for (int i=0; i<950 ; i+=40)
+            {
+                txLine(0, i, 1000, i-350);
+                for (int j=0; j<8000; j+=100)
+                {
+                    txLine(j+(i/40%2)*50-a*20, i-j/100*35-(i/40%2)*18+a*7, j+(i/40%2)*50-a*20, i-j/100*35-40-(i/40%2)*18+a*7);
+                }
+            }
+
+        if (z==1) {/*txSetColor(ZZ); txSetFillColor(ZZ);*/ txRectangle(1000-a*45, -1, 1000, 601);}
     }
