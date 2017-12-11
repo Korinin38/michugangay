@@ -5,25 +5,27 @@
     CONST COLORREF  MYOWN_COLOR1 = TX_BLACK,
                     MYOWN_COLOR2 = TX_WHITE;
 
-    COLORREF OGRBLU, OGRHAT, WALLFILL;
+    COLORREF OGRBLU, OGRHAT, WALLFILL=RGB(200, 200, 200);
 
     void LogoPS(bool);
     void ToBeContinued();
     void Ryab();
+    void Ogr(int);
 
     int main()
     {
         txCreateWindow (1000, 600);
         txSetColor(TX_WHITE);
         txSetFillColor(TX_WHITE);
-        bool i=0;
-        while (1)
+        /*bool i=0;
+        while (i<2)
         {
             LogoPS(i);
-            i=(i+1)%2;
+            i=(i+1);
 
         }
-        Ryab();
+        Ryab();*/
+        ToBeContinued();
         return 0;
     }
 
@@ -165,12 +167,15 @@
 
     void ToBeContinued()
     {
+        txSetColor(WALLFILL);
         txSetFillColor(WALLFILL);
         for(int i = 0; i<4; i++)
         {
             for(int q = 0; q<24; q++)
             {
-                Wall(q);
+                txSetFillColor(WALLFILL);
+                txClear();
+        //        Wall(q);
                 Ogr(q);
                 txSleep(40);
             }
@@ -180,14 +185,34 @@
         {
             if (i==11)
             {
-                OGRBLU = RGB();
-                OGRHAT = RGB();
-                WALLFILL = RGB();
+          //      OGRBLU = RGB();
+          //      OGRHAT = RGB();
+          //      WALLFILL = RGB();
                 txSleep(5000);
             }
-            Wall(q, 1);
-            Ogr(q);
+          //  Wall(q, 1);
+            Ogr(i);
             txSleep(40);
 
         }
+    }
+    void Ogr(int i)
+    {
+        int x=1, y=1;
+        txSetFillColor(TX_BLUE);
+        POINT body[41]={{6+x, 417+y},{6+x, 270+y}, {42+x, 196+y}, {65+x, 167+y}, {70+x, 152+y}, {87+x, 130+y}, {97+x, 122+y}, {107+x, 119+y}, {140+x, 110+y}, {156+x, 104+y}, {168+x, 97+y}, {168+x, 86+y}, {172+x, 80+y}, {178+x, 77+y}, {192+x, 77+y}, {226+x, 85+y}, {240+x, 87+y}, {261+x, 94+y}, {244+x, 103+y}, {261+x, 94+y}, {279+x, 90+y}, {290+x, 86+y}, {302+x, 83+y}, {300+x, 68+y}, {313+x, 80+y}, {321+x, 79+y}, {327+x, 70+y}, {358+x, 62+y}, {373+x, 62+y}, {395+x, 72+y}, {411+x, 80+y}, {418+x, 99+y}, {419+x, 114+y}, {420+x, 135+y}, {420+x, 137+y}, {413+x, 159+y}, {408+x, 172+y}, {418+x, 172+y}, {435+x, 188+y}, {442+x, 271+y}, {451+x, 417+y}};
+        POINT cloak[25]={{156+x, 104+y}, {153+x, 115+y}, {164+x, 141+y}, {185+x, 170+y}, {225+x, 183+y}, {271+x, 188+y}, {304+x, 181+y}, {356+x, 175+y}, {408+x, 172+y}, {418+x, 172+y}, {435+x, 188+y}, {344+x, 394+y}, {310+x, 407+y}, {260+x, 400+y}, {267+x, 340+y}, {243+x, 363+y}, {257+x, 329+y}, {237+x, 329+y}, {213+x, 315+y}, {194+x, 316+y}, {213+x, 260+y}, {146+x, 231+y}, {107+x, 119+y}, {140+x, 110+y}, {156+x, 104+y}};
+        POINT ear1[7]={{419+x, 114+y}, {425+x, 98+y}, {429+x, 86+y}, {431+x,  105+y}, {432+x, 122+y}, {426+x, 131+y}, {420+x, 135+y}};
+        POINT ear2[4]={{172+x, 80+y}, {168+x, 66+y}, {168+x, 49+y}, {184+x, 69+y}};
+        POINT head[22]={{172+x, 80+y}, {184+x, 69+y}, {198+x, 61+y}, {214+x, 48+y}, {245+x, 36+y}, {255+x, 37+y}, {268+x, 41+y}, {277+x, 46+y}, {284+x, 53+y}, {299+x, 70+y}, {301+x, 83+y}, {290+x, 86+y}, {291+x, 73+y}, {279+x, 90+y}, {261+x, 95+y}, {244+x, 103+y}, {261+x, 95+y}, {240+x, 87+y}, {226+x, 85+y}, {192+x, 77+y}, {178+x, 77+y}, {172+x, 80+y}};
+        POINT hat[6]={{245+x, 36+y}, {253+x, 28+y}, {264+x, 27+y}, {270+x, 30+y}, {274+x, 39+y}, {277+x, 46+y}};
+        POINT ear3[3]={{290+x, 86+y}, {291+x, 73+y}, {279+x, 90+y}};
+        txPolygon(body, 41);
+        txPolygon(ear1, 7);
+        txPolygon(ear2, 4);
+        txPolygon(ear3, 3);
+        txPolygon(hat, 6);
+        txSetFillColour(TX_BROWN);
+        txPolygon(cloak, 25);
+        txPolygon(head, 22);
     }
