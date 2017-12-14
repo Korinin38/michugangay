@@ -27,20 +27,16 @@
     void Ogr(int);
     void Wall(int, bool z=0);
     void Duf(int x = 0, int y = 0, int size = 14, bool knifeistoobad = false, bool needbetterknife = false, bool needchains = true, bool dkbetter = true, bool needcolor = true, bool signa = false);
+    void Hook(int, int, double);
+
     int main()
     {
         txCreateWindow (1000, 600);
         txSetColor(TX_WHITE);
         txSetFillColor(TX_WHITE);
-        /*bool i=0;
-        while (i<2)
-        {
-            LogoPS(i);
-            i=(i+1);
-
-        }
-        Ryab();*/
-        Duf();
+        LogoPS(0);
+        LogoPS(1);
+        Ryab();
         txSleep(500);
         ToBeContinued();
         return 0;
@@ -331,4 +327,12 @@
         txSetFillColor (TX_WHITE);
         txCircle ((13)*size+x, (4.5)*size+y, 0.3*size);
         txCircle ((14.5)*size+x, (4.5)*size+y, 0.3*size);
+    }
+
+    void Hook(int x, int y, double z)
+    {
+        txSetColor(WALLFILL);
+        txSetFillColor(TX_TRANSPARENT);
+        txLine(x, y, x-10*z, y+20*z);
+        txCircle(x, y, z);
     }
