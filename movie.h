@@ -1,5 +1,21 @@
 	#include "TXlib.h"
 	using namespace std;
+//!@brief CONST COLORREF  MYOWN_COLOR1 = TX_BLACK
+//! just цвет
+//!@brief CONST COLORREF  MYOWN_COLOR2 = TX_WHITE
+//! just цвет
+//!@brief void LogoPS(bool)
+//! Функция, рисующая мой лого
+//!@param stage - стадия лого:
+//!               0: там где круг крутится
+//!               1: там где буквы появляются
+//!@brief void Ryab()
+//! Рисует лучшую рябь в мире
+//!@brief void Ogr(int)
+//! Just Ogr
+//!@param i - номер стадии
+
+
 
 
     CONST COLORREF  MYOWN_COLOR1 = TX_BLACK,
@@ -368,4 +384,4 @@
         txSelectFont("Comic Sans MS", 30, 12);
         txSetTextAlign(TA_LEFT);
         txTextOut(64+x, 525, "To Be Continued");
-    }
+}
