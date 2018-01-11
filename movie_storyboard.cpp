@@ -10,7 +10,7 @@
         txSetFillColor(TX_WHITE);
         LogoPS(0);
         LogoPS(1);
-        Ryab();
+        Ryab(1000, 600, 4);
         ToBeContinued();
         return 0;
     }

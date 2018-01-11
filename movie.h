@@ -2,43 +2,58 @@
 	using namespace std;
 //!@brief CONST COLORREF  MYOWN_COLOR1 = TX_BLACK
 //! just цвет
+
 //!@brief CONST COLORREF  MYOWN_COLOR2 = TX_WHITE
 //! just цвет
+
 //!@brief void LogoPS(bool)
 //! Функция, рисующая мой лого
 //!@param stage - стадия лого:
 //!               0: там где круг крутится
 //!               1: там где буквы появляются
-//!@brief void Ryab()
+
+//!@brief void Ryab(int x=1000, int y=600, int r=3)
 //! Рисует лучшую рябь в мире
-//!@brief void Ogr(int)
-//! Just Ogr
-//!@param i - номер стадии передвижения по мультфильму
+//!@param x - (по умолчанию 1000) x-размер окна
+//!@param y - (по умолчанию 600) y-размер окна
+//!@param r - (по умолчанию 3) размер рябинки (да-да)
+
+//!@brief void Ogr(int x, int y)
+//! Just Ogr с параметрами
+//!@param x - (по умолчанию 0) x-координата начала рисования
+//!@param y - (по умолчанию 0) y-координата начала рисования
+
 //!@brief void Wall(int a, bool z)
 //! рисует наикрутейшую стену в мире
 //!@param a - номер стадии передвижения по мультфильму
 //!@param z - переключение стадии окончания стены
-//!@brief void Duf(int x = 0, int y = 0, int size = 14, bool knifeistoobad = false, bool needbetterknife = false, bool needcolor = true)
-//! это ПУУУДЖ
+
+//!@brief void PudgMovie(int x = 0, int y = 0, int size = 14, bool knifeistoobad = false, bool needbetterknife = false, bool needcolor = true)
+//! это ПУУУДЖ (порезанная киноверсия)
 //!@param x - (по умолчанию 0) x-координата начала рисования
 //!@param y - (по умолчанию 0) y-координата начала рисования
 //!@param size - (по умолчанию 14) размер пуджа. 5 для пудглинга
 //!@param knifeistoobad - (по умолчанию false) переключатель "фу ножик некрасивый"
 //!@param needbetterknife - (по умолчанию false) переключатель "нужен красивый ножик". Работает только при значении knifeistoobad == true
 //!@param needcolor - (по умолчанию true) переключатель "он какой-то пустой что ли"
+
 //!@brief void Hook(int x, int y, double z)
 //! Рисует такой себе хук
 //!@param x - x-координата начала рисования
 //!@param y - y-координата начала рисования
 //!@param z - размер хука
+
 //!@brief void Setka(float size, int right = 0, int down = 0)
 //! Инструмент для более точного рисования - сетка
 //!@param size - размер сетки
 //!@param right - сдвигает сетку вправо на * пикселей
 //!@param down - сдвигает сетку вниз на * пикселей
+
 //!@brief void ArrowToBeContinued(int x)
 //! Та самая легендарная стрелочка. Рисование по различному y не предусмотрено
-//!@param x - x-координата начала рисования
+//!@param x - (по умолчанию 0) x-координата начала рисования
+//!@param y - (по умолчанию 0) y-координата начала рисования
+
 //!@brief void ToBeContinued()
 //! Сборная солянка всех (почти) вышеперечисленных функций, создающая мультфильм
 
@@ -67,16 +82,16 @@
 
 	void LogoPS(bool stage, int x=1000, int y=600);
     void ToBeContinued();
-    void Ryab();
-    void Ogr(int);
+    void Ryab(int x=1000, int y=600, int r=3);
+    void Ogr(int x=0, int y=0);
     void Wall(int, bool z=0);
-    void Duf(int x = 0, int y = 0, int size = 14, bool knifeistoobad = false, bool needbetterknife = false, bool needcolor = true);
+    void PudgMovie(int x = 0, int y = 0, int size = 14, bool knifeistoobad = false, bool needbetterknife = false, bool needcolor = true);
     void Hook(int, int, double);
-    void ArrowToBeContinued(int);
+    void ArrowToBeContinued(int x=0, int y=0);
 
 
 	void LogoPS(bool stage, int x, int y)
-    	{
+    {
         int i;
         if (stage==true)
         {
@@ -88,21 +103,18 @@
             {
                 txSetColor(TX_WHITE);
                 txSetFillColor(TX_WHITE);
-                txCircle (x/2, y/2, 150);
+                txCircle (x/2, y/2, y/4);
                 if (i>0)
                 {
                     txSetColor(MYOWN_COLOR1, 3);
                     txSetFillColor(TX_TRANSPARENT);
-                    txCircle(470, 348, 2);
-                    txCircle(580, 348, 2);
-                    txLine(430, 350, 430, 225);
-                    txChord(481, 300, 381, 225, -90, 180);
+                    txCircle(x*0.47, y*0.58, 2);
+                    txCircle(x*0.58, y*0.58, 2);
+                    txLine(x*0.43, y*0.58333, x*0.43, y*0.375);
+                    txArc(x*0.481, y/2, x*0.381, y*0.375, -90, 180);
 
-                    txChord(500, 287, 600, 227, 50, 210);
-                    txChord(480, 285, 580, 350, 225, 215);
-                    txSetColor(MYOWN_COLOR2, 4);
-                    txLine(545, 283, 571, 233);
-                    txLine(534, 288, 504, 341);
+                    txArc(x/2, y*0.47833, x*0.6, y*0.37833, 50, 210);
+                    txArc(x*0.48, y*0.475, x*0.58, y*0.58333, 225, 215);
 
                     txSetColor(MYOWN_COLOR1, 3);
                     txSetTextAlign(TA_CENTER);
@@ -158,21 +170,21 @@
             txLine(x/2, y/4, x/2, y*3/4);
             txSleep(400);
             int ugol;
-            txPie(350, 150, 650, 450, 90, 1);
-            txPie(350, 150, 650, 450, 270, 1);
+            txPie(x/2-y/4, y/4, x/2+y/4, y*3/4, 90, 1);
+            txPie(x/2-y/4, y/4, x/2+y/4, y*3/4, 270, 1);
             for (ugol=2; ugol<=129;)
             {
-                txPie(351, 151, 649, 449, 90, ugol);
-                txPie(351, 151, 649, 449, 270, ugol);
+                txPie(x/2-y/4+1, y/4+1, x/2+y/4-1, y*3/4-1, 90, ugol);
+                txPie(x/2-y/4+1, y/4+1, x/2+y/4-1, y*3/4-1, 270, ugol);
                 ugol+=ugol-1;
                 txSleep(60);
             }
             for (ugol=176; ugol<180;)
             {
-                txPie(351, 151, 649, 449, 90, ugol);
-                txPie(351, 151, 649, 449, 270, ugol);
+                txPie(x/2-y/4+1, y/4+1, x/2+y/4-1, y*3/4-1, 90, ugol);
+                txPie(x/2-y/4+1, y/4+1, x/2+y/4-1, y*3/4-1, 270, ugol);
                 ugol+=(180-ugol)/1.7;
-                if (ugol>175) ugol=180;
+                if (ugol>178) ugol=180;
                 txSleep(60);
             }
         }
@@ -181,7 +193,7 @@
 
 //-----------------------------------------------------------------------------
 
-    void Ryab()
+    void Ryab(int x, int y, int r)
     {
         COLORREF kek;
 	txPlaySound("ryab.wav");
@@ -190,9 +202,9 @@
         {
 
 
-            for (int j=0; j<1000; j+=3)
+            for (int j=0; j<x; j+=r)
             {
-                for (int k=0; k<600; k+=3)
+                for (int k=0; k<y; k+=r)
                     {
                         a[0]=rand()%16*15;
                         a[1]=rand()%16*15;
@@ -200,7 +212,7 @@
                         kek=RGB(a[0],a[1],a[2]);
                         txSetColor(kek);
                         txSetFillColor(kek);
-                        txRectangle(j,k,j+3,k+3);
+                        txRectangle(j,k,j+r,k+r);
                     }
             }
             txSleep(20);
@@ -214,6 +226,7 @@
     {
         txSetColor(WALLFILL);
         txSetFillColor(WALLFILL);
+        int x, y;
         for(int i = 0; i<4; i++)
         {
             for(int q = 0; q<24; q++)
@@ -221,7 +234,9 @@
                 txSetFillColor(WALLFILL);
                 txClear();
                 Wall(q);
-                Ogr(q);
+                if (q<18) x=50+2*q, y=270-4*q;
+                else x=86-(q-18)*5, y=198+(q-18)*10;
+                Ogr(x, y);
 		if (q==16&&i==1) txPlaySound ("SHORT VERSION - ROUNDABOUT.wav");
                 txSleep(40);
             }
@@ -239,15 +254,19 @@
                 txSetFillColor(WALLFILL);
                 txClear();
                 Wall(i, 1);
-                Ogr(i);
-                ArrowToBeContinued(100);
+                if (i<18) x=50+2*i, y=270-4*i;
+                else x=86-(i-18)*5, y=198+(i-18)*10;
+                Ogr(x, y);
+                ArrowToBeContinued(100, 500);
                 txSleep(5600);
             }
             txSetFillColor(WALLFILL);
             txClear();
             Wall(i, 1);
-            Ogr(i);
-            ArrowToBeContinued(2300-i*200);
+            if (i<18) x=50+2*i, y=270-4*i;
+            else x=86-(i-18)*5, y=198+(i-18)*10;
+            Ogr(x, y);
+            ArrowToBeContinued(2300-i*200, 500);
             txSleep(40);
         }
         txPlaySound (NULL);
@@ -255,11 +274,8 @@
 
 //-----------------------------------------------------------------------------
 
-    void Ogr(int i)
+    void Ogr(int x, int y)
     {
-        int x, y;
-        if (i<18) x=50+2*i, y=270-4*i;
-        else x=86-(i-18)*5, y=198+(i-18)*10;
         txSetColor(TX_TRANSPARENT);
         txSetFillColor(OGRBLU);
         POINT body[41]={{6+x, 417+y},{6+x, 270+y}, {42+x, 196+y}, {65+x, 167+y}, {70+x, 152+y}, {87+x, 130+y}, {97+x, 122+y}, {107+x, 119+y}, {140+x, 110+y}, {156+x, 104+y}, {168+x, 97+y}, {168+x, 86+y}, {172+x, 80+y}, {178+x, 77+y}, {192+x, 77+y}, {226+x, 85+y}, {240+x, 87+y}, {261+x, 94+y}, {244+x, 103+y}, {261+x, 94+y}, {279+x, 90+y}, {290+x, 86+y}, {302+x, 83+y}, {300+x, 68+y}, {313+x, 80+y}, {321+x, 79+y}, {327+x, 70+y}, {358+x, 62+y}, {373+x, 62+y}, {395+x, 72+y}, {411+x, 80+y}, {418+x, 99+y}, {419+x, 114+y}, {420+x, 135+y}, {420+x, 137+y}, {413+x, 159+y}, {408+x, 172+y}, {418+x, 172+y}, {435+x, 188+y}, {442+x, 271+y}, {451+x, 417+y}};
@@ -311,12 +327,12 @@
                     txLine(j+(i/40%2)*50-a*20, i-j/100*35-(i/40%2)*18+a*7, j+(i/40%2)*50-a*20, i-j/100*35-40-(i/40%2)*18+a*7);
                 }
             }
-        if (z==1) {txSetColor(TX_BLACK); txSetFillColor(DARKBLUEDREAM); txRectangle(1000-a*46, -1, 1000, 601); Duf(1000-a*35, 70, 12); Hook(1275-a*35, 147, a+3);}
+        if (z==1) {txSetColor(TX_BLACK); txSetFillColor(DARKBLUEDREAM); txRectangle(1000-a*46, -1, 1000, 601); PudgMovie(1000-a*35, 70, 12); Hook(1275-a*35, 147, a+3);}
     }
 
 //-----------------------------------------------------------------------------
 
-    void Duf(int x, int y, int size, bool knifeistoobad, bool needbetterknife, bool needcolor)
+    void PudgMovie(int x, int y, int size, bool knifeistoobad, bool needbetterknife, bool needcolor)
     {
         txSetFillColor(SKINCOLOR);
         txSetColor (SKINCOLOR);
@@ -403,19 +419,19 @@
 
 //-----------------------------------------------------------------------------
 
-    void ArrowToBeContinued(int x)
+    void ArrowToBeContinued(int x, int y)
     {
         txSetColor(COLDBLADE, 2);
         txSetFillColor(TX_BLACK);
-        POINT arrow[7] = {{0+x, 540},{40+x,500}, {40+x,520}, {288+x, 520}, {288+x, 560}, {40+x, 560}, {40+x, 580}};
-        POINT tri1[3] = {{300+x, 522}, {300+x, 560}, {320+x, 560}};
-        POINT tri2[3] = {{310+x, 520}, {332+x, 520}, {332+x, 560}};
-        POINT tri3[3] = {{338+x, 520}, {338+x, 556}, {356+x, 520}};
+        POINT arrow[7] = {{0+x, 40+y},{40+x, y}, {40+x, 20+y}, {288+x, 20+y}, {288+x, 60+y}, {40+x, 60+y}, {40+x, 80+y}};
+        POINT tri1[3] = {{300+x, 22+y}, {300+x, 60+y}, {320+x, 60+y}};
+        POINT tri2[3] = {{310+x, 20+y}, {332+x, 20+y}, {332+x, 60+y}};
+        POINT tri3[3] = {{338+x, 20+y}, {338+x, 56+y}, {356+x, 20+y}};
         txPolygon(arrow, 7);
         txPolygon(tri1, 3);
         txPolygon(tri2, 3);
         txPolygon(tri3, 3);
         txSelectFont("Comic Sans MS", 30, 12);
         txSetTextAlign(TA_LEFT);
-        txTextOut(64+x, 525, "To Be Continued");
+        txTextOut(64+x, 25+y, "To Be Continued");
 }
