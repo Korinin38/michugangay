@@ -1,19 +1,47 @@
 	#include "TXlib.h"
 	using namespace std;
 //!@brief CONST COLORREF  MYOWN_COLOR1 = TX_BLACK
-//! just С†РІРµС‚
+//! just цвет
 //!@brief CONST COLORREF  MYOWN_COLOR2 = TX_WHITE
-//! just С†РІРµС‚
+//! just цвет
 //!@brief void LogoPS(bool)
-//! Р¤СѓРЅРєС†РёСЏ, СЂРёСЃСѓСЋС‰Р°СЏ РјРѕР№ Р»РѕРіРѕ
-//!@param stage - СЃС‚Р°РґРёСЏ Р»РѕРіРѕ:
-//!               0: С‚Р°Рј РіРґРµ РєСЂСѓРі РєСЂСѓС‚РёС‚СЃСЏ
-//!               1: С‚Р°Рј РіРґРµ Р±СѓРєРІС‹ РїРѕСЏРІР»СЏСЋС‚СЃСЏ
+//! Функция, рисующая мой лого
+//!@param stage - стадия лого:
+//!               0: там где круг крутится
+//!               1: там где буквы появляются
 //!@brief void Ryab()
-//! Р РёСЃСѓРµС‚ Р»СѓС‡С€СѓСЋ СЂСЏР±СЊ РІ РјРёСЂРµ
+//! Рисует лучшую рябь в мире
 //!@brief void Ogr(int)
 //! Just Ogr
-//!@param i - РЅРѕРјРµСЂ СЃС‚Р°РґРёРё
+//!@param i - номер стадии передвижения по мультфильму
+//!@brief void Wall(int a, bool z)
+//! рисует наикрутейшую стену в мире
+//!@param a - номер стадии передвижения по мультфильму
+//!@param z - переключение стадии окончания стены
+//!@brief void Duf(int x = 0, int y = 0, int size = 14, bool knifeistoobad = false, bool needbetterknife = false, bool needcolor = true)
+//! это ПУУУДЖ
+//!@param x - (по умолчанию 0) x-координата начала рисования
+//!@param y - (по умолчанию 0) y-координата начала рисования
+//!@param size - (по умолчанию 14) размер пуджа. 5 для пудглинга
+//!@param knifeistoobad - (по умолчанию false) переключатель "фу ножик некрасивый"
+//!@param needbetterknife - (по умолчанию false) переключатель "нужен красивый ножик". Работает только при значении knifeistoobad == true
+//!@param needcolor - (по умолчанию true) переключатель "он какой-то пустой что ли"
+//!@brief void Hook(int x, int y, double z)
+//! Рисует такой себе хук
+//!@param x - x-координата начала рисования
+//!@param y - y-координата начала рисования
+//!@param z - размер хука
+//!@brief void Setka(float size, int right = 0, int down = 0)
+//! Инструмент для более точного рисования - сетка
+//!@param size - размер сетки
+//!@param right - сдвигает сетку вправо на * пикселей
+//!@param down - сдвигает сетку вниз на * пикселей
+//!@brief void ArrowToBeContinued(int x)
+//! Та самая легендарная стрелочка. Рисование по различному y не предусмотрено
+//!@param x - x-координата начала рисования
+//!@brief void ToBeContinued()
+//! Сборная солянка всех (почти) вышеперечисленных функций, создающая мультфильм
+
 
 
 
@@ -42,7 +70,7 @@
     void Ryab();
     void Ogr(int);
     void Wall(int, bool z=0);
-    void Duf(int x = 0, int y = 0, int size = 14, bool knifeistoobad = false, bool needbetterknife = false, bool needchains = true, bool dkbetter = true, bool needcolor = true, bool signa = false);
+    void Duf(int x = 0, int y = 0, int size = 14, bool knifeistoobad = false, bool needbetterknife = false, bool needcolor = true);
     void Hook(int, int, double);
     void ArrowToBeContinued(int);
 
@@ -282,7 +310,7 @@
 
 //-----------------------------------------------------------------------------
 
-    void Duf(int x, int y, int size, bool knifeistoobad, bool needbetterknife, bool needchains, bool dkbetter, bool needcolor, bool signa)
+    void Duf(int x, int y, int size, bool knifeistoobad, bool needbetterknife, bool needcolor)
     {
         txSetFillColor(SKINCOLOR);
         txSetColor (SKINCOLOR);
