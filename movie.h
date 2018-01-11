@@ -218,6 +218,7 @@
                 txClear();
                 Wall(q);
                 Ogr(q);
+		if (q==16&&i==1) txPlaySound ("SHORT VERSION - ROUNDABOUT.wav");
                 txSleep(40);
             }
         }
@@ -245,6 +246,7 @@
             ArrowToBeContinued(2300-i*200);
             txSleep(40);
         }
+        txPlaySound (NULL);
     }
 
 //-----------------------------------------------------------------------------
