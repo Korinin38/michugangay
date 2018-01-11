@@ -11,7 +11,6 @@
         LogoPS(0);
         LogoPS(1);
         Ryab();
-        txSleep(500);
         ToBeContinued();
         return 0;
     }

@@ -135,9 +135,11 @@
                 }
                 txSleep(100);
             }
+            txPlaySound(NULL);
         }
         else
         {
+            txPlaySound("logo.wav");
             txSetColor(TX_WHITE, 3);
             txSetFillColor(TX_BLACK);
             txClear();
@@ -182,6 +184,7 @@
     void Ryab()
     {
         COLORREF kek;
+	txPlaySound("ryab.wav");
         int a[3];
         for (int i = 0; i<10; i++)
         {
@@ -202,6 +205,7 @@
             }
             txSleep(20);
         }
+	txPlaySound(NULL);
     }
 
 //-----------------------------------------------------------------------------
