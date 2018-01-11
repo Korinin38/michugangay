@@ -65,7 +65,7 @@
     CONST COLORREF BILLGREY = RGB (160, 152, 52);
 
 
-	void LogoPS(bool);
+	void LogoPS(bool stage, int x=1000, int y=600);
     void ToBeContinued();
     void Ryab();
     void Ogr(int);
@@ -75,7 +75,7 @@
     void ArrowToBeContinued(int);
 
 
-	void LogoPS(bool stage)
+	void LogoPS(bool stage, int x, int y)
     	{
         int i;
         if (stage==true)
@@ -88,7 +88,7 @@
             {
                 txSetColor(TX_WHITE);
                 txSetFillColor(TX_WHITE);
-                txCircle (500, 300, 150);
+                txCircle (x/2, y/2, 150);
                 if (i>0)
                 {
                     txSetColor(MYOWN_COLOR1, 3);
@@ -110,28 +110,28 @@
                     switch (i)
                     {
                         case 4:
-                            txTextOut(495, 380, "p");
+                            txTextOut(x/2-5, y*19/30, "p");
                             break;
                         case 5:
-                            txTextOut(495, 380, "pr");
+                            txTextOut(x/2-5, y*19/30, "pr");
                             break;
                         case 6:
-                            txTextOut(495, 380, "pre");
+                            txTextOut(x/2-5, y*19/30, "pre");
                             break;
                         case 7:
-                            txTextOut(495, 380, "pres");
+                            txTextOut(x/2-5, y*19/30, "pres");
                             break;
                         case 8:
-                            txTextOut(495, 380, "prese");
+                            txTextOut(x/2-5, y*19/30, "prese");
                             break;
                         case 9:
-                            txTextOut(495, 380, "presen");
+                            txTextOut(x/2-5, y*19/30, "presen");
                             break;
                         case 10:
-                            txTextOut(495, 380, "present");
+                            txTextOut(x/2-5, y*19/30, "present");
                             break;
                     }
-                    if (i>10) txTextOut(495, 380, "presents");
+                    if (i>10) txTextOut(x/2-5, y*19/30, "presents");
                 }
                 txSleep(100);
             }
@@ -144,18 +144,18 @@
             txSetFillColor(TX_BLACK);
             txClear();
             txSetFillColor(TX_WHITE);
-            txLine(500, 299, 500, 301);
-            for (i=2; i<128;)
+            txLine(x/2, y/2-1, x/2, y/2+1);
+            for (i=2; i<y*16/75;)
             {
-                txLine(500, 301-i, 500, 299+i);
+                txLine(x/2, y/2-1-i, x/2, y/2+1+i);
                 i+=i-1;
                 txSleep(60);
             }
-            txLine(500, 159, 500, 441);
+            txLine(x/2, y*31/100, x/2, y*69/100);
             txSleep(60);
-            txLine(500, 153, 500, 447);
+            txLine(x/2, y*27/100, x/2, y*73/100);
             txSleep(60);
-            txLine(500, 150, 500, 450);
+            txLine(x/2, y/4, x/2, y*3/4);
             txSleep(400);
             int ugol;
             txPie(350, 150, 650, 450, 90, 1);
