@@ -1,5 +1,6 @@
     #include <iostream>
     #include "TXLib.h"
+    #include "movie.h"
     CONST int YRACKETCONST=500;
     int xRacketGlobal,
         sizeRacketGlobal,
@@ -7,10 +8,12 @@
         yBallGlobal,
         sizeBallGlobal,
         speedBallGlobal,
-        variableForGoodRandom;
-    double ballDirectionGlobal;
+        variableForGoodRandom,
+        bounceNumber,
+        gameOver;
+    double ballDirectionGlobal, sinus, cosinus;
 
-    void interRac()
+    void interfaceRac()
     {
         if (GetAsyncKeyState(VK_LEFT))
         {
@@ -20,7 +23,12 @@
         {
             xRacketGlobal += 6;
         }
+        if (GetAsyncKeyState('9'))
+        {
+            gameOver=-999;
+        }
     }
+
     void checkBoarderBoom()
     {
         if (xRacketGlobal-sizeRacketGlobal<-10) xRacketGlobal=sizeRacketGlobal+5;
@@ -40,12 +48,14 @@
     void directionChecker()
     {
         ballDirectionGlobal=((variableForGoodRandom%360+360)%360)*M_PI/180;
+        sinus=sin(ballDirectionGlobal);
+        cosinus=cos(ballDirectionGlobal);
     }
 
     void moveBallAndCheckBoardBoom()
     {
-        xBallGlobal+=speedBallGlobal*sin(ballDirectionGlobal);
-        yBallGlobal+=speedBallGlobal*cos(ballDirectionGlobal);
+        xBallGlobal+=speedBallGlobal*sinus;
+        yBallGlobal+=speedBallGlobal*cosinus;
         if (xBallGlobal-sizeBallGlobal<0)
         {
             xBallGlobal+=5;
@@ -64,19 +74,44 @@
             variableForGoodRandom=-variableForGoodRandom;
             directionChecker();
         }
-        if (yBallGlobal+sizeBallGlobal>600)
+        if (yBallGlobal + sizeBallGlobal >= YRACKETCONST
+            &&
+            xBallGlobal >= xRacketGlobal - sizeRacketGlobal
+            &&
+            xBallGlobal <= xRacketGlobal + sizeRacketGlobal)
         {
             yBallGlobal-=5;
             variableForGoodRandom=180-variableForGoodRandom;
             directionChecker();
         }
+        if (yBallGlobal+sizeBallGlobal>600)
+        {
+            yBallGlobal-=5;
+            variableForGoodRandom=180-variableForGoodRandom;
+            directionChecker();
+            gameOver++;
+        }
+    }
+
+    void screenOfGameOver()
+    {
+        txSetTextAlign(TA_CENTER);
+        txSetFillColor(TX_BLACK);
+        txClear();
+        txSetColor(TX_WHITE, 5);
+        txSelectFont("Calibri",200,40,5);
+        txTextOut(200, 200, "GAME OVER");
+    }
+
+    void bounceNumberOut()
+    {
+        txSetColor(TX_BLACK);
+        txTextOut(80, 80, "bounceNumber");
     }
 
     int main()
     {
         txCreateWindow (800, 600);
-        txSetColor(TX_BLACK, 5);
-        txSetFillColor(TX_WHITE);
         txClear();
         sizeRacketGlobal=80;
         xRacketGlobal=400;
@@ -84,17 +119,31 @@
         yBallGlobal=250;
         sizeBallGlobal=30;
         speedBallGlobal=10;
+        gameOver=0;
+        bounceNumber=0;
         variableForGoodRandom=rand()%360;
-        while(!GetAsyncKeyState(VK_ESCAPE))
+        directionChecker();
+        LogoPS(0, 800, 600);
+        LogoPS(1, 800, 600);
+        txSetFillColor(TX_WHITE);
+        txClear();
+        txSetColor(TX_BLACK, 5);
+        drawCoolRacketThatIsSoCoolThatYourEyesWillBeBrokenWhenYouSeeMyCoolRacket();
+        drawBallOfMyDreamYesIHadBadChildhood();
+        txSleep(2000);
+        while(!GetAsyncKeyState(VK_ESCAPE)&&gameOver!=1)
         {
             txClear();
-            interRac();
+            bounceNumberOut();
+            txSetColor(TX_BLACK, 5);
+            interfaceRac();
             checkBoarderBoom();
             moveBallAndCheckBoardBoom();
-            directionChecker();
             drawCoolRacketThatIsSoCoolThatYourEyesWillBeBrokenWhenYouSeeMyCoolRacket();
             drawBallOfMyDreamYesIHadBadChildhood();
-            txSleep(10);
+            txSleep(1);
         }
+        if (gameOver==1) screenOfGameOver();
+        txSleep(1);
         return 0;
     }
