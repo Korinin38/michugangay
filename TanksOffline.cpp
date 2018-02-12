@@ -15,8 +15,6 @@
         mapDat2=8,
         yOfCenter;
 
-    vector<int> obstacles;
-
     double mapSize=15;
 
 
@@ -27,6 +25,7 @@
 
     int main()
     {
+        srand(time(NULL));
         txCreateWindow (xWindowSize, yWindowSize);
         xOfCenter=xWindowSize/2;
         yOfCenter=yWindowSize/2;
@@ -44,7 +43,6 @@
                 for (int j=0; j<mapDat2; j++)
                 {
                     in>>mapMas[i][j];
-                if (mapMas[i][j]==0) {obstacles.insert(i); obstacles.insert(j);}
                 }
             }
         }
@@ -55,7 +53,6 @@
             {
                 mapMas[i][j]=rand()%20/4;
                 if (mapMas[i][j]>0) mapMas[i][j]=1;
-                if (mapMas[i][j]==0) {obstacles.insert(i); obstacles.insert(j);}
             }
         }
         correctMapChecker();
@@ -190,8 +187,9 @@
             graph[n][4]=1;
             for (int i=0; i<4; i++)
             {
-                if (graph[n][i]!=-1) return checkThisPoint(graph[n][i]);
+                if (graph[n][i]!=-1) if (checkThisPoint(graph[n][i])) return 1;
             }
+            return 0;
         }
     }
 
