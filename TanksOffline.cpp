@@ -55,19 +55,6 @@
                 if (mapMas[i][j]>0) mapMas[i][j]=1;
             }
         }
-
-
-        for (int i=0; i<mapDat1; i++)
-        {
-            for (int j=0; j<mapDat2; j++)
-                cout<<mapMas[i][j]<<" ";
-            cout<<endl;
-        }
-        txSleep(3000);
-        correctMapChecker();
-        /*
-            drawMap();
-            txSleep(1000);
         correctMapChecker();
         while (!GetAsyncKeyState(VK_ESCAPE))
         {
@@ -77,7 +64,7 @@
             drawMap();
             txSleep(1);
 
-        }*/
+        }
         return 0;
     }
 
@@ -194,15 +181,6 @@
             {
                 if (mapMas[i1][j1]==0) graph[mapDat2*i1+j1][4]=-1;
             }
-
-                                                    for (int z=0; z<mapDat1; z++)
-                                                    {
-                                                        for (int x=0; x<mapDat2; x++)
-                                                            cout<<mapMas[z][x]<<" ";
-                                                        cout<<endl;
-                                                    }
-                                                    cout<<i<<" "<<j<<endl;
-                                                    txSleep(100);
             if (graph[mapDat2*i+j][4]!=-1)
             if (true!=checkThisPoint(mapDat2*i+j))
             {
@@ -214,6 +192,7 @@
                     else j1--;
                 }
                 mapMas[i1][j1]=1;
+                graph[mapDat2*i+j][4]=0;
                 if (i1>0&&mapMas[i1-1][j1]!=0)
                 {
                     graph[mapDat2*i1+j1][0]=mapDat2*(i1-1)+j1;
