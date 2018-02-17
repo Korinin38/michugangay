@@ -1,6 +1,6 @@
+    #include "TXLib.h"
     #include <fstream>
     #include <string>
-    #include "TXLib.h"
     using namespace std;
     CONST int   YRACKETCONST=500,
                 xWindowSize=800,
@@ -56,7 +56,7 @@
             }
         }
         correctMapChecker();
-        while (!GetAsyncKeyState(VK_ESCAPE))
+        while (!GetAsyncKeyState(VK_ESCAPE)&&!GetAsyncKeyState(VK_F9))
         {
             txSetFillColor(TX_WHITE);
             txClear();
@@ -99,10 +99,10 @@
         else graph[0][1]=1;                                   //initializing key points (corners)
         graph[mapDat2-1][0]=-1;
         graph[mapDat2-1][1]=-1;
-        if (mapMas[1][mapDat2-1]==0) graph[mapDat2*2-1][2]=-1;
-        else graph[mapDat2*2-1][2]=1;
-        if (mapMas[mapDat2-2][3]==0) graph[mapDat2-2][3]=-1;
-        else graph[mapDat2-2][3]=mapDat2-2;
+        if (mapMas[1][mapDat2-1]==0) graph[mapDat2-1][2]=-1;
+        else graph[mapDat2-1][2]=mapDat2*2-1;
+        if (mapMas[mapDat2-2][3]==0) graph[mapDat2-1][3]=-1;
+        else graph[mapDat2-1][3]=mapDat2-2;
         graph[mapDat2*(mapDat1-1)][2]=-1;
         graph[mapDat2*(mapDat1-1)][3]=-1;
         if (mapMas[mapDat1-2][0]==0) graph[mapDat2*(mapDat1-1)][0]=-1;
@@ -132,10 +132,10 @@
             else graph[mapDat2*i][2]=mapDat2*(i+1);
             if (mapMas[i-1][mapDat2-1]==0) graph[mapDat2*(i+1)-1][0]=-1;          //OMG i did it
             else graph[mapDat2*(i+1)-1][0]=mapDat2*i-1;
-            if (mapMas[i][mapDat2-2]==0) graph[mapDat2*(i+1)-1][3]=-1;
-            else graph[mapDat2*(i+1)-1][3]=mapDat2*(i+1)-2;
             if (mapMas[i+1][mapDat2-1]==0) graph[mapDat2*(i+1)-1][2]=-1;
             else graph[mapDat2*(i+1)-1][2]=mapDat2*(i+2)-1;
+            if (mapMas[i][mapDat2-2]==0) graph[mapDat2*(i+1)-1][3]=-1;
+            else graph[mapDat2*(i+1)-1][3]=mapDat2*(i+1)-2;
         }
         for (j=1; j<mapDat2-1; j++)
         {
@@ -168,7 +168,7 @@
                 else graph[mapDat2*i+j][1]=mapDat2*i+j+1;
                 if (mapMas[i+1][j]==0) graph[mapDat2*i+j][2]=-1;
                 else graph[mapDat2*i+j][2]=mapDat2*(i+1)+j;
-                if (mapMas[i][j-1]==0) graph[mapDat2*i+j][2]=-1;
+                if (mapMas[i][j-1]==0) graph[mapDat2*i+j][3]=-1;
                 else graph[mapDat2*i+j][3]=mapDat2*i+j-1;
             }
         }
@@ -182,8 +182,10 @@
                 if (mapMas[i1][j1]==0) graph[mapDat2*i1+j1][4]=-1;
             }
             if (graph[mapDat2*i+j][4]!=-1)
+            {
             if (true!=checkThisPoint(mapDat2*i+j))
             {
+                cout<<"KEK";
                 int i1=i, j1=j;
 
                 while (mapMas[i1][j1]!=0&&(i1>0||j1>0))
@@ -192,36 +194,41 @@
                     else j1--;
                 }
                 mapMas[i1][j1]=1;
-                graph[mapDat2*i+j][4]=0;
+                graph[mapDat2*i1+j1][4]=0;
                 if (i1>0&&mapMas[i1-1][j1]!=0)
                 {
                     graph[mapDat2*i1+j1][0]=mapDat2*(i1-1)+j1;
                     graph[mapDat2*(i1-1)+j1][2]=mapDat2*i1+j1;
                 }
-                if (j1<mapDat2-1&&mapMas[i][j+1]!=0)
+                if (j1<mapDat2-1&&mapMas[i1][j1+1]!=0)
                 {
                     graph[mapDat2*i1+j1][1]=mapDat2*i1+j1+1;
-                    graph[mapDat2*i1+j1+1][1]=mapDat2*i1+j1;
+                    graph[mapDat2*i1+j1+1][3]=mapDat2*i1+j1;
 
                 }
-                if (i1<mapDat1-1&&mapMas[i+1][j]!=0)
+                if (i1<mapDat1-1&&mapMas[i1+1][j1]!=0)
                 {
-                   graph[mapDat2*i+j][2]=mapDat2*(i+1)+j;
-                   graph[mapDat2*(i+1)+j][2]=mapDat2*i+j;
+                   graph[mapDat2*i1+j][2]=mapDat2*(i1+1)+j1;
+                   graph[mapDat2*(i1+1)+j1][0]=mapDat2*i1+j1;
                 }
-                if (j1>0&&mapMas[i][j-1]!=0)
+                if (j1>0&&mapMas[i1][j1-1]!=0)
                 {
-                    graph[mapDat2*i+j][3]=mapDat2*i+j-1;
-                    graph[mapDat2*i+j-1][3]=mapDat2*i+j;
+                    graph[mapDat2*i1+j1][3]=mapDat2*i1+j1-1;
+                    graph[mapDat2*i1+j1-1][1]=mapDat2*i1+j1;
                 }
             }
+            }
+
+        cout<<graph[mapDat2-1][0]<<" "<<graph[mapDat2-1][1]<<" "<<graph[mapDat2-1][2]<<" "<<graph[mapDat2-1][3]<<" "<<graph[mapDat2-1][4]<<endl;
+        cout<<graph[mapDat2*2-1][0]<<" "<<graph[mapDat2*2-1][1]<<" "<<graph[mapDat2*2-1][2]<<" "<<graph[mapDat2*2-1][3]<<" "<<graph[mapDat2*2-1][4]<<i<<" "<<j<<" "<<endl;
+        txSleep(100);
         }
         }
     }
 
     bool checkThisPoint(int n)
     {
-        if (graph[n][4]==1) return 0;
+        if (graph[n][4]==1||graph[n][4]==-1) return 0;
         else if (n==0) return 1;
         else
         {
