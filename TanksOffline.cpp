@@ -11,17 +11,26 @@
         tankPlaceX[tankAmount],
         tankPlaceY[tankAmount],
         xOfCenter,
-        mapDat1=8,
-        mapDat2=8,
+        mapDat1=11,
+        mapDat2=11,
         yOfCenter;
 
     double mapSize=15;
 
-
-    void interfaceOfMap();
-    void drawMap();
-    void correctMapChecker();
+    //math
+    void mapInitializer(bool sav);
+    bool correctMapChecker(bool onlyCheck=0);
     bool checkThisPoint(int n);
+    bool mapSavedChecker();
+
+    //interface
+    void interfaceOfMap();
+    //drawing
+    void drawMap();
+    void drawMapInit();
+    void drawMapSaveFound();
+    void drawMapLoad();
+
 
     int main()
     {
@@ -29,12 +38,52 @@
         txCreateWindow (xWindowSize, yWindowSize);
         xOfCenter=xWindowSize/2;
         yOfCenter=yWindowSize/2;
+        drawMapInit();
+        txSleep(500);
+        bool counter=0, counterWhile=0;
+        if (mapSavedChecker())
+        {
+            drawMapSaveFound();
+            while (counterWhile==0)
+            {
+                if (GetAsyncKeyState('Y'))
+                {
+                    counter=1;
+                    counterWhile=1;
+                }
+                if (GetAsyncKeyState('N'))
+                {
+                    counter=0;
+                    counterWhile=1;
+                }
+            }
+        }
+        drawMapLoad();
+        mapInitializer(counter);
+        correctMapChecker();
+        txSleep(1000);
+
+        while (!GetAsyncKeyState(VK_ESCAPE)&&!GetAsyncKeyState(VK_F9))
+        {
+            txSetFillColor(TX_WHITE);
+            txClear();
+            interfaceOfMap();
+            drawMap();
+            txSleep(1);
+
+        }
+        return 0;
+    }
+
+    //math
+    void mapInitializer(bool sav)
+    {
         ifstream in;
         ofstream out;
         string saveController;
         in.open("ss.txt");
         getline(in, saveController);
-        if (saveController=="SAVE_DATA_RIGHT_FILE=true")
+        if (sav)
         {
             in>>mapDat1;
             in>>mapDat2;
@@ -55,22 +104,24 @@
                 if (mapMas[i][j]>0) mapMas[i][j]=1;
             }
         }
-        correctMapChecker();
-        while (!GetAsyncKeyState(VK_ESCAPE)&&!GetAsyncKeyState(VK_F9))
-        {
-            txSetFillColor(TX_WHITE);
-            txClear();
-            interfaceOfMap();
-            drawMap();
-            txSleep(1);
+    }
 
-        }
-        return 0;
+
+    bool mapSavedChecker()
+    {
+        ifstream in;
+        ofstream out;
+        string saveController;
+        in.open("ss.txt");
+        getline(in, saveController);
+        in.close();
+        if (saveController=="SAVE_DATA_RIGHT_FILE=true") return 1;
+        else return 0;
     }
 
     CONST int graphMax=mapDat1*mapDat2;
     int graph[1000000][5];             //^0 >1 v2 <3 checked - 4
-    void correctMapChecker()
+    bool correctMapChecker(bool onlyCheck)
     {
         int i, j;
         for (i=0; i<mapDat1; i++)
@@ -185,7 +236,8 @@
             {
             if(!checkThisPoint(mapDat2*i+j))
             {
-                cout<<"KEK";
+                if (onlyCheck)
+                return 0;
                 int i1=i, j1=j;
 
                 while (mapMas[i1][j1]!=0&&(i1>0||j1>0))
@@ -219,12 +271,13 @@
             }
             }
 
-        cout<<graph[(mapDat1-1)*mapDat2][0]<<" "<<graph[(mapDat1-1)*mapDat2][1]<<" "<<graph[(mapDat1-1)*mapDat2][2]<<" "<<graph[(mapDat1-1)*mapDat2][3]<<" "<<graph[(mapDat1-1)*mapDat2][4]<<endl;
+      //  cout<<graph[(mapDat1-1)*mapDat2][0]<<" "<<graph[(mapDat1-1)*mapDat2][1]<<" "<<graph[(mapDat1-1)*mapDat2][2]<<" "<<graph[(mapDat1-1)*mapDat2][3]<<" "<<graph[(mapDat1-1)*mapDat2][4]<<endl;
 
-        cout<<graph[(mapDat1-2)*mapDat2][0]<<" "<<graph[(mapDat1-2)*mapDat2][1]<<" "<<graph[(mapDat1-2)*mapDat2][2]<<" "<<graph[(mapDat1-2)*mapDat2][3]<<" "<<graph[(mapDat1-2)*mapDat2][4]<<endl<<i<<" "<<j<<" "<<endl;
+      //  cout<<graph[(mapDat1-2)*mapDat2][0]<<" "<<graph[(mapDat1-2)*mapDat2][1]<<" "<<graph[(mapDat1-2)*mapDat2][2]<<" "<<graph[(mapDat1-2)*mapDat2][3]<<" "<<graph[(mapDat1-2)*mapDat2][4]<<endl<<i<<" "<<j<<" "<<endl;
         //txSleep(30);
         }
         }
+        return 1;
     }
 
     bool checkThisPoint(int n)
@@ -242,23 +295,26 @@
         }
     }
 
+    //interface
     void interfaceOfMap()
     {
         if (GetAsyncKeyState('V'))
         {
-            mapSize+=0.06;
+            mapSize+=0.07;
         }
         if (GetAsyncKeyState('B'))
         {
-            mapSize-=0.06;
+            mapSize-=0.07;
         }
-        if (GetAsyncKeyState(VK_RIGHT))     xOfCenter-=1;
-        if (GetAsyncKeyState(VK_LEFT))      xOfCenter+=1;
-        if (GetAsyncKeyState(VK_DOWN))      yOfCenter-=1;
-        if (GetAsyncKeyState(VK_UP))        yOfCenter+=1;
+        if (GetAsyncKeyState(VK_RIGHT))     xOfCenter-=ceil(mapSize/20);
+        if (GetAsyncKeyState(VK_LEFT))      xOfCenter+=ceil(mapSize/20);
+        if (GetAsyncKeyState(VK_DOWN))      yOfCenter-=ceil(mapSize/20);
+        if (GetAsyncKeyState(VK_UP))        yOfCenter+=ceil(mapSize/20);
         if (mapSize<5) mapSize=5;
+        if (mapSize>35) mapSize=35;
     }
 
+    //drawing
     void drawMap()
     {
         txSetColor(TX_BLACK, mapSize);
@@ -273,4 +329,32 @@
                 txRectangle(xOfCenter-(mapDat1-1-i*2)*mapSize, yOfCenter-(mapDat2-1-j*2)*mapSize, xOfCenter-(mapDat1-i*2+1)*mapSize, yOfCenter-(mapDat2-j*2+1)*mapSize);
             }
         }
+    }
+
+    void drawMapInit()
+    {
+        txSetFillColor(TX_BLACK);
+        txClear();
+        txSetColor(TX_WHITE);
+        txSetTextAlign(TA_CENTER);
+        txTextOut(xWindowSize/2, yWindowSize/2, "creating map");
+    }
+
+    void drawMapLoad()
+    {
+        txSetFillColor(TX_BLACK);
+        txClear();
+        txSetColor(TX_WHITE);
+        txSetTextAlign(TA_CENTER);
+        txTextOut(xWindowSize/2, yWindowSize/2, "loading map");
+    }
+
+    void drawMapSaveFound()
+    {
+        txSetFillColor(TX_BLACK);
+        txClear();
+        txSetColor(TX_WHITE);
+        txSetTextAlign(TA_CENTER);
+        txTextOut(xWindowSize/2-5, yWindowSize/2-5, "saved map found. Load?\n");
+        txTextOut(xWindowSize/2+5, yWindowSize/2+5, "Y - yes  N - no");
     }
