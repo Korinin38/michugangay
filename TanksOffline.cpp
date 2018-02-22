@@ -87,10 +87,10 @@
                 }
             }
         }
-        graph[0][4]=0;
-        graph[mapDat2-1][4]=0;
-        graph[mapDat2*(mapDat1-1)][4]=0;
-        graph[mapDat1*mapDat2-1][4]=0;
+        if (mapMas[0][0]>0)graph[0][4]=0;
+        if (mapMas[0][mapDat2-1]>0)graph[mapDat2-1][4]=0;
+        if (mapMas[mapDat1-1][0]>0)graph[mapDat2*(mapDat1-1)][4]=0;
+        if (mapMas[mapDat1-1][mapDat2-1]>0)graph[mapDat1*mapDat2-1][4]=0;
         graph[0][0]=-1;
         graph[0][3]=-1;
         if (mapMas[1][0]==0) graph[0][2]=-1;
@@ -120,14 +120,14 @@
 
         for (i=1; i<mapDat1-1; i++)
         {
-            graph[mapDat2*i][4]=0;
-            graph[mapDat2*(i+1)-1][4]=0;
+            if (mapMas[i][0]>0) graph[mapDat2*i][4]=0;
+            if (mapMas[i][mapDat2-1]>0) graph[mapDat2*(i+1)-1][4]=0;
             graph[mapDat2*i][3]=-1;
             graph[mapDat2*(i+1)-1][1]=-1;
             if (mapMas[i-1][0]==0) graph[mapDat2*i][0]=-1;
             else graph[mapDat2*i][0]=mapDat2*(i-1);
             if (mapMas[i][1]==0) graph[mapDat2*i][1]=-1;
-            else graph[mapDat2*i][2]=mapDat2*i+1;
+            else graph[mapDat2*i][1]=mapDat2*i+1;
             if (mapMas[i+1][0]==0) graph[mapDat2*i][2]=-1;
             else graph[mapDat2*i][2]=mapDat2*(i+1);
             if (mapMas[i-1][mapDat2-1]==0) graph[mapDat2*(i+1)-1][0]=-1;          //OMG i did it
@@ -139,8 +139,8 @@
         }
         for (j=1; j<mapDat2-1; j++)
         {
-            graph[j][4]=0;
-            graph[mapDat2*(mapDat1-1)+j][4]=0;
+            if (mapMas[0][j]>0) graph[j][4]=0;
+            if (mapMas[mapDat1-1][j]>0)graph[mapDat2*(mapDat1-1)+j][4]=0;
             graph[j][0]=-1;
             graph[mapDat2*(mapDat1-1)+j][2]=-1;
             if (mapMas[0][j+1]==0) graph[j][1]=-1;
@@ -161,7 +161,7 @@
         {
             for (j=1; j<mapDat2-1; j++)
             {
-                graph[mapDat2*i+j][4]=0;
+                if (mapMas[i][j]>0)graph[mapDat2*i+j][4]=0;
                 if (mapMas[i-1][j]==0) graph[mapDat2*i+j][0]=-1;
                 else graph[mapDat2*i+j][0]=mapDat2*(i-1)+j;
                 if (mapMas[i][j+1]==0) graph[mapDat2*i+j][1]=-1;
@@ -183,14 +183,14 @@
             }
             if (graph[mapDat2*i+j][4]!=-1)
             {
-            if (true!=checkThisPoint(mapDat2*i+j))
+            if(!checkThisPoint(mapDat2*i+j))
             {
                 cout<<"KEK";
                 int i1=i, j1=j;
 
                 while (mapMas[i1][j1]!=0&&(i1>0||j1>0))
                 {
-                    if (rand()%2==0&&i1>0) i1--;
+                    if (rand()%2==0&&i1>0||j1==0) i1--;
                     else j1--;
                 }
                 mapMas[i1][j1]=1;
@@ -219,9 +219,10 @@
             }
             }
 
-        cout<<graph[mapDat2-1][0]<<" "<<graph[mapDat2-1][1]<<" "<<graph[mapDat2-1][2]<<" "<<graph[mapDat2-1][3]<<" "<<graph[mapDat2-1][4]<<endl;
-        cout<<graph[mapDat2*2-1][0]<<" "<<graph[mapDat2*2-1][1]<<" "<<graph[mapDat2*2-1][2]<<" "<<graph[mapDat2*2-1][3]<<" "<<graph[mapDat2*2-1][4]<<i<<" "<<j<<" "<<endl;
-        txSleep(100);
+        cout<<graph[(mapDat1-1)*mapDat2][0]<<" "<<graph[(mapDat1-1)*mapDat2][1]<<" "<<graph[(mapDat1-1)*mapDat2][2]<<" "<<graph[(mapDat1-1)*mapDat2][3]<<" "<<graph[(mapDat1-1)*mapDat2][4]<<endl;
+
+        cout<<graph[(mapDat1-2)*mapDat2][0]<<" "<<graph[(mapDat1-2)*mapDat2][1]<<" "<<graph[(mapDat1-2)*mapDat2][2]<<" "<<graph[(mapDat1-2)*mapDat2][3]<<" "<<graph[(mapDat1-2)*mapDat2][4]<<endl<<i<<" "<<j<<" "<<endl;
+        //txSleep(30);
         }
         }
     }
