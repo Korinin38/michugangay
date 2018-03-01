@@ -3,47 +3,58 @@
     #include <string>
     using namespace std;
     CONST int   YRACKETCONST=500,
-                xWindowSize=800,
-                yWindowSize=600;
+                xWindowSize=1276,
+                yWindowSize=800;
 
     int mapMas[1000][1000],
-        xOfCenter=xWindowSize/2,
-        mapDat1=20,
-        mapDat2=20,
-        yOfCenter=yWindowSize/2,
         tankAmount=2;
 
     struct tank{
         int x,
-            y;
+            y,
+            statHealth,
+            statHP,
+            statAttack,
+            statSpeed,
+            statAim;
         COLORREF color;
     };
 
-    double mapSize=15;
 
     //logic
-    void mapInitializer(bool sav);
-    bool correctMapChecker(bool onlyCheck=0);
+    void mapInitializer(bool sav, int* mapDat1, int* mapDat2);
+    bool correctMapChecker(bool onlyCheck, int mapDat1, int mapDat2);
     bool checkThisPoint(int n);
     bool mapSavedChecker();
-    void mapBoundController();
+    void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize);
 
     //interface
-    void interfaceOfMap();
-    void interfaceTankMoveCheck(tank*);
+    void interfaceOfMap(double* mapSize, int* xOfCenter, int* yOfCenter);
+    void interfaceTankMoveCheck(tank[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
+    bool secretFunction(int* ss);
 
     //drawing
-    void drawMap();
+    void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     void drawWelcome();
     void drawMapInit();
     void drawMapSaveFound();
-    void drawMapGlowTank(tank t);
+    void drawMapGlowTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     void drawMapLoad();
-    void drawTank(tank t);
+    void drawTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
 
 
     int main()
     {
+        double mapSize=15;
+
+        int xOfCenter=xWindowSize/2,
+            yOfCenter=yWindowSize/2,
+            mapDat1=10,
+            mapDat2=10,
+            po=0,
+            pi=0;
+
+
         srand(time(NULL));
         txCreateWindow (xWindowSize, yWindowSize);
         xOfCenter=xWindowSize/2;
@@ -80,20 +91,24 @@
                 }
             }
             drawMapLoad();
-            mapInitializer(counter);
-            correctMapChecker();
+            mapInitializer(counter, &mapDat1, &mapDat2);
+            correctMapChecker(0, mapDat1, mapDat2);
             txSleep(1000);
 
             while (!GetAsyncKeyState(VK_ESCAPE)&&!GetAsyncKeyState(VK_F9)&&!GetAsyncKeyState('R'))
             {
                 txSetFillColor(TX_WHITE);
                 txClear();
-                interfaceOfMap();
-                mapBoundController();
-                drawMap();
-                interfaceTankMoveCheck(t);
-                drawTank(t[0]);
-                drawTank(t[1]);
+                interfaceOfMap(&mapSize, &xOfCenter, &yOfCenter);
+                drawMap(xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
+                interfaceTankMoveCheck(t, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
+                drawTank(t[0], xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
+                drawTank(t[1], xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
+                if (pi==0)
+                {
+                    if (secretFunction(&po)) pi=1;
+                    mapBoundController(&xOfCenter, &yOfCenter, mapDat1, mapDat2, mapSize);
+                }
                 txSleep(1);
 
             }
@@ -102,7 +117,7 @@
     }
 
     //logic
-    void mapInitializer(bool sav)
+    void mapInitializer(bool sav, int* mapDat1, int* mapDat2)
     {
         ifstream in;
         ofstream out;
@@ -111,20 +126,20 @@
         getline(in, saveController);
         if (sav)
         {
-            in>>mapDat1;
-            in>>mapDat2;
-            for (int i=0; i<mapDat1; i++)
+            in>>*mapDat1;
+            in>>*mapDat2;
+            for (int i=0; i<*mapDat1; i++)
             {
-                for (int j=0; j<mapDat2; j++)
+                for (int j=0; j<*mapDat2; j++)
                 {
                     in>>mapMas[i][j];
                 }
             }
         }
         else
-        for (int i=0; i<mapDat1; i++)
+        for (int i=0; i<*mapDat1; i++)
         {
-            for (int j=0; j<mapDat2; j++)
+            for (int j=0; j<*mapDat2; j++)
             {
                 mapMas[i][j]=rand()%20/4;
                 if (mapMas[i][j]>0) mapMas[i][j]=1;
@@ -145,9 +160,8 @@
         else return 0;
     }
 
-    CONST int graphMax=mapDat1*mapDat2;
     int graph[1000000][5];             //^0 >1 v2 <3 checked - 4
-    bool correctMapChecker(bool onlyCheck)
+    bool correctMapChecker(bool onlyCheck, int mapDat1, int mapDat2)
     {
         int i, j;
         for (i=0; i<mapDat1; i++)
@@ -322,66 +336,66 @@
         }
     }
 
-    void mapBoundController()
+    void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize)
     {
         if (mapDat1*2*mapSize>xWindowSize)
         {
-            if (xOfCenter>(mapDat1+1)*mapSize)
-                xOfCenter=(mapDat1+1)*mapSize;
-            if (xOfCenter<xWindowSize-(mapDat1-1)*mapSize)
-                xOfCenter=xWindowSize-(mapDat1-1)*mapSize;
+            if (*xOfCenter>(mapDat1+1)*mapSize)
+                *xOfCenter=(mapDat1+1)*mapSize;
+            if (*xOfCenter<xWindowSize-(mapDat1-1)*mapSize)
+                *xOfCenter=xWindowSize-(mapDat1-1)*mapSize;
         }
         else
         {
-            if (xOfCenter<(mapDat1+1)*mapSize)
+            if (*xOfCenter<(mapDat1+1)*mapSize)
             {
-                xOfCenter=(mapDat1+1)*mapSize;
+                *xOfCenter=(mapDat1+1)*mapSize;
             }
-            if (xOfCenter+(mapDat1-1)*mapSize>xWindowSize)
+            if (*xOfCenter+(mapDat1-1)*mapSize>xWindowSize)
             {
-                xOfCenter=xWindowSize-(mapDat1-1)*mapSize;
+                *xOfCenter=xWindowSize-(mapDat1-1)*mapSize;
             }
         }
         if (mapDat2*2*mapSize>yWindowSize)
         {
-            if (yOfCenter>(mapDat2+1)*mapSize)
-                yOfCenter=(mapDat2+1)*mapSize;
-            if (yOfCenter<yWindowSize-(mapDat2-1)*mapSize)
-                yOfCenter=yWindowSize-(mapDat2-1)*mapSize;
+            if (*yOfCenter>(mapDat2+1)*mapSize)
+                *yOfCenter=(mapDat2+1)*mapSize;
+            if (*yOfCenter<yWindowSize-(mapDat2-1)*mapSize)
+                *yOfCenter=yWindowSize-(mapDat2-1)*mapSize;
         }
         else
         {
-            if (yOfCenter<(mapDat2+1)*mapSize)
+            if (*yOfCenter<(mapDat2+1)*mapSize)
             {
-                yOfCenter=(mapDat2+1)*mapSize;
+                *yOfCenter=(mapDat2+1)*mapSize;
             }
-            if (yOfCenter+(mapDat2-1)*mapSize>yWindowSize)
+            if (*yOfCenter+(mapDat2-1)*mapSize>yWindowSize)
             {
-                yOfCenter=yWindowSize-(mapDat2-1)*mapSize;
+                *yOfCenter=yWindowSize-(mapDat2-1)*mapSize;
             }
         }
     }
 
     //interface
-    void interfaceOfMap()
+    void interfaceOfMap(double* mapSize, int* xOfCenter, int* yOfCenter)
     {
         if (GetAsyncKeyState('V'))
         {
-            mapSize+=0.09;
+            *mapSize+=0.09;
         }
         if (GetAsyncKeyState('B'))
         {
-            mapSize-=0.09;
+            *mapSize-=0.09;
         }
-        if (GetAsyncKeyState(VK_RIGHT))     xOfCenter-=ceil(mapSize/20);
-        if (GetAsyncKeyState(VK_LEFT))      xOfCenter+=ceil(mapSize/20);
-        if (GetAsyncKeyState(VK_DOWN))      yOfCenter-=ceil(mapSize/20);
-        if (GetAsyncKeyState(VK_UP))        yOfCenter+=ceil(mapSize/20);
-        if (mapSize<5) mapSize=5;
-        if (mapSize>35) mapSize=35;
+        if (GetAsyncKeyState(VK_RIGHT))     *xOfCenter-=ceil(*mapSize/20);
+        if (GetAsyncKeyState(VK_LEFT))      *xOfCenter+=ceil(*mapSize/20);
+        if (GetAsyncKeyState(VK_DOWN))      *yOfCenter-=ceil(*mapSize/20);
+        if (GetAsyncKeyState(VK_UP))        *yOfCenter+=ceil(*mapSize/20);
+        if (*mapSize<5) *mapSize=5;
+        if (*mapSize>35) *mapSize=35;
     }
 
-    void interfaceTankMoveCheck(tank t[])
+    void interfaceTankMoveCheck(tank t[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
     {
         for (int i=0; i<tankAmount; i++)
         {
@@ -396,23 +410,31 @@
                     )
                )
             {
-                drawMapGlowTank(t[i]);
+                drawMapGlowTank(t[i], xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
             }
         }
     }
 
     //drawing
-    void drawMap()
+    void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
     {
         txSetColor(TX_BLACK, mapSize);
         txRectangle(xOfCenter-(1+mapDat1)*mapSize, yOfCenter-(1+mapDat2)*mapSize, xOfCenter+(mapDat1-1)*mapSize, yOfCenter+(mapDat2-1)*mapSize);
-        txSetColor(TX_BLACK, mapSize/3);
+        txSetColor(TX_BLACK );
         for (int i=0; i<mapDat1; i++)
         {
             for (int j=0; j<mapDat2; j++)
             {
-                if (mapMas[j][i]==0) txSetFillColor(TX_BLACK);
-                else txSetFillColor(TX_WHITE);
+                if (mapMas[j][i]==0)
+                {
+                    txSetColor(RGB(25, 25, 25), mapSize/8);
+                    txSetFillColor(RGB(25, 25, 25));
+                }
+                else
+                {
+                    txSetColor(TX_BLACK);
+                    txSetFillColor(TX_WHITE);
+                }
                 txRectangle(xOfCenter-(mapDat1-i*2-1)*mapSize, yOfCenter-(mapDat2-j*2-1)*mapSize, xOfCenter-(mapDat1-i*2+1)*mapSize, yOfCenter-(mapDat2-j*2+1)*mapSize);
             }
         }
@@ -424,9 +446,9 @@
         txClear();
         txSetColor(TX_WHITE);
         txSetTextAlign(TA_CENTER);
-        txSelectFont("SYSTEM_FIXED_FONT", 30);
+        txSelectFont("SYSTEM_FIXED_FONT", 80);
         txTextOut(xWindowSize/2, yWindowSize/2, "TANKS OFFLINE");
-        txSelectFont("SYSTEM_FIXED_FONT", 10);
+        txSelectFont("SYSTEM_FIXED_FONT", 40);
         txTextOut(xWindowSize/2+30, yWindowSize/2+15, "beta");
 
     }
@@ -459,7 +481,7 @@
         txTextOut(xWindowSize/2+5, yWindowSize/2+5, "Y - yes  N - no");
     }
 
-    void drawMapGlowTank(tank t)
+    void drawMapGlowTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
     {
         txSetFillColor(TX_YELLOW);
         txRectangle (   xOfCenter-(mapDat1-t.x*2-1)*mapSize,
@@ -469,9 +491,22 @@
                     );
     }
 
-    void drawTank(tank t)
+    void drawTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
     {
         txSetColor(TX_BLACK);
         txSetFillColor(t.color);
         txCircle(xOfCenter-(mapDat1-t.x*2)*mapSize, yOfCenter-(mapDat2-t.y*2)*mapSize, mapSize/3);
+    }
+
+    bool secretFunction(int* ss)
+    {
+        switch(*ss)
+        {
+            case 0:
+                if (GetAsyncKeyState('U')) *ss++;
+                break;
+            case 1:
+                if (GetAsyncKeyState('M')) return 1;
+                break;
+        }
     }
