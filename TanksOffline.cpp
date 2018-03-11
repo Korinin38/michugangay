@@ -2,9 +2,6 @@
     #include <fstream>
     #include <string>
     using namespace std;
-    CONST int   YRACKETCONST=500,
-                xWindowSize=1276,
-                yWindowSize=800;
 
     int mapMas[1000][1000],
         tankAmount=2;
@@ -26,40 +23,49 @@
     bool correctMapChecker(bool onlyCheck, int mapDat1, int mapDat2);
     bool checkThisPoint(int n);
     bool mapSavedChecker();
-    void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize);
+    void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize, int xWindowSize, int yWindowSize);
 
     //interface
     void interfaceOfMap(double* mapSize, int* xOfCenter, int* yOfCenter);
     void interfaceTankMoveCheck(tank[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     bool secretFunction(int* ss);
+    bool windowSizeChooseAndConfirmation(int* xWindowSize, int* yWindowSize);
+    void changeResolution(int* xWindowSize, int* yWindowSize);
 
     //drawing
     void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
-    void drawWelcome();
-    void drawMapInit();
-    void drawMapSaveFound();
+    void drawWelcome(int xWindowSize, int yWindowSize);
+    void drawMapInit(int xWindowSize, int yWindowSize);
+    void drawMapSaveFound(int xWindowSize, int yWindowSize);
     void drawMapGlowTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
-    void drawMapLoad();
+    void drawMapLoad(int xWindowSize, int yWindowSize);
     void drawTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
+    void Tank(int x, int y, float k, int pozition);
+    void drawDefinitionChoose(int* xWindowSize, int* yWindowSize);
+    void drawTankStat(tank t[], int tankAmount, int xWindowSize, int yWindowSize);
 
 
     int main()
     {
         double mapSize=15;
 
-        int xOfCenter=xWindowSize/2,
+        int
+            xWindowSize=1276,
+            yWindowSize=800,
+            xOfCenter=xWindowSize/2,
             yOfCenter=yWindowSize/2,
-            mapDat1=10,
-            mapDat2=10,
+            mapDat1=30,
+            mapDat2=30,
             po=0,
             pi=0;
 
 
+        windowSizeChooseAndConfirmation(&xWindowSize, &yWindowSize);
         srand(time(NULL));
         txCreateWindow (xWindowSize, yWindowSize);
         xOfCenter=xWindowSize/2;
         yOfCenter=yWindowSize/2;
-        drawWelcome();
+        drawWelcome(xWindowSize, yWindowSize);
         txSleep(1000);
         tank t[2];
         t[0].x=0;
@@ -70,12 +76,12 @@
         t[1].color=TX_RED;
         while(!GetAsyncKeyState(VK_ESCAPE)&&!GetAsyncKeyState(VK_F9))
         {
-            drawMapInit();
+            drawMapInit(xWindowSize, yWindowSize);
             txSleep(500);
             bool counter=0, counterWhile=0;
             if (mapSavedChecker())
             {
-                drawMapSaveFound();
+                drawMapSaveFound(xWindowSize, yWindowSize);
                 while (counterWhile==0)
                 {
                     if (GetAsyncKeyState('Y'))
@@ -90,7 +96,7 @@
                     }
                 }
             }
-            drawMapLoad();
+            drawMapLoad(xWindowSize, yWindowSize);
             mapInitializer(counter, &mapDat1, &mapDat2);
             correctMapChecker(0, mapDat1, mapDat2);
             txSleep(1000);
@@ -102,19 +108,26 @@
                 interfaceOfMap(&mapSize, &xOfCenter, &yOfCenter);
                 drawMap(xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
                 interfaceTankMoveCheck(t, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
-                drawTank(t[0], xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
+                Tank(xOfCenter-mapDat1*mapSize, yOfCenter-mapDat2*mapSize, mapSize, 1);
+               // drawTank(t[0], xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
                 drawTank(t[1], xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
+                drawTankStat(t, 2, xWindowSize, yWindowSize);
                 if (pi==0)
                 {
                     if (secretFunction(&po)) pi=1;
-                    mapBoundController(&xOfCenter, &yOfCenter, mapDat1, mapDat2, mapSize);
+                    mapBoundController(&xOfCenter, &yOfCenter, mapDat1, mapDat2, mapSize, xWindowSize, yWindowSize);
                 }
-                txSleep(1);
+                txSleep(10);
 
             }
         }
         return 0;
     }
+
+
+    //{============================================================================
+    //}============================================================================
+
 
     //logic
     void mapInitializer(bool sav, int* mapDat1, int* mapDat2)
@@ -145,6 +158,7 @@
                 if (mapMas[i][j]>0) mapMas[i][j]=1;
             }
         }
+        in.close();
     }
 
 
@@ -160,7 +174,14 @@
         else return 0;
     }
 
+
+
+
     int graph[1000000][5];             //^0 >1 v2 <3 checked - 4
+
+
+
+
     bool correctMapChecker(bool onlyCheck, int mapDat1, int mapDat2)
     {
         int i, j;
@@ -336,20 +357,20 @@
         }
     }
 
-    void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize)
+    void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize, int xWindowSize, int yWindowSize)
     {
-        if (mapDat1*2*mapSize>xWindowSize)
+        if (mapDat1*2*mapSize>xWindowSize-xWindowSize/4-20)
         {
-            if (*xOfCenter>(mapDat1+1)*mapSize)
-                *xOfCenter=(mapDat1+1)*mapSize;
+            if (*xOfCenter>(mapDat1+1)*mapSize+xWindowSize/4+20)
+                *xOfCenter=(mapDat1+1)*mapSize+xWindowSize/4+20;
             if (*xOfCenter<xWindowSize-(mapDat1-1)*mapSize)
                 *xOfCenter=xWindowSize-(mapDat1-1)*mapSize;
         }
         else
         {
-            if (*xOfCenter<(mapDat1+1)*mapSize)
+            if (*xOfCenter<(mapDat1+1)*mapSize+xWindowSize/4+20)
             {
-                *xOfCenter=(mapDat1+1)*mapSize;
+                *xOfCenter=(mapDat1+1)*mapSize+xWindowSize/4+20;
             }
             if (*xOfCenter+(mapDat1-1)*mapSize>xWindowSize)
             {
@@ -381,11 +402,11 @@
     {
         if (GetAsyncKeyState('V'))
         {
-            *mapSize+=0.09;
+            *mapSize+=0.19;
         }
         if (GetAsyncKeyState('B'))
         {
-            *mapSize-=0.09;
+            *mapSize-=0.19;
         }
         if (GetAsyncKeyState(VK_RIGHT))     *xOfCenter-=ceil(*mapSize/20);
         if (GetAsyncKeyState(VK_LEFT))      *xOfCenter+=ceil(*mapSize/20);
@@ -415,6 +436,67 @@
         }
     }
 
+    bool windowSizeChooseAndConfirmation(int* xWindowSize, int* yWindowSize)
+    {
+        ifstream in;
+        ofstream out;
+        string str;
+        in.open("pcPref.txt");
+        getline(in, str);
+        if (str=="//This file is for saving your PC's preferences like screen resolution, etc.")
+        {
+            while (str.length()!=0)
+            {
+                getline(in, str);
+                if (str.substr(0, 20)=="screenDefinitionX = ")
+                {
+                    str.erase(0, 20);
+                    *xWindowSize = atoi(str.c_str());
+                }
+                else if (str.substr(0, 20)=="screenDefinitionY = ")
+                {
+                    str.erase(0, 20);
+                    *yWindowSize = atoi(str.c_str());
+                }
+            }
+            in.close();
+            return 1;
+        }
+        else
+        {
+            in.close();
+            out.open("pcPref.txt");
+            out << "//This file is for saving your PC's preferences like screen resolution, etc.\n";
+            drawDefinitionChoose(xWindowSize, yWindowSize);
+            out << "screenDefinitionX = " << *xWindowSize <<endl << "screenDefinitionY = " << *yWindowSize << endl;
+            return 0;
+        }
+    }
+
+    void changeResolution(int* xWindowSize, int* yWindowSize)
+    {
+        if (GetAsyncKeyState(VK_LEFT))
+        {
+            *xWindowSize=*xWindowSize-2;
+        }
+        if (GetAsyncKeyState(VK_RIGHT))
+        {
+            *xWindowSize=*xWindowSize+2;
+        }
+        if (GetAsyncKeyState(VK_DOWN))
+        {
+            *yWindowSize=*yWindowSize-1;
+        }
+        if (GetAsyncKeyState(VK_UP))
+        {
+            *yWindowSize=*yWindowSize+1;
+        }
+        if (*xWindowSize<0) *xWindowSize=0;
+        if (*xWindowSize>2715) *xWindowSize=2715;
+        if (*yWindowSize<0) *yWindowSize=0;
+        if (*yWindowSize>1527) *yWindowSize=1527;
+    }
+
     //drawing
     void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
     {
@@ -427,7 +509,7 @@
             {
                 if (mapMas[j][i]==0)
                 {
-                    txSetColor(RGB(25, 25, 25), mapSize/8);
+                    txSetColor(RGB(25, 25, 25));
                     txSetFillColor(RGB(25, 25, 25));
                 }
                 else
@@ -440,7 +522,7 @@
         }
     }
 
-    void drawWelcome()
+    void drawWelcome(int xWindowSize, int yWindowSize)
     {
         txSetFillColor(TX_BLACK);
         txClear();
@@ -453,7 +535,7 @@
 
     }
 
-    void drawMapInit()
+    void drawMapInit(int xWindowSize, int yWindowSize)
     {
         txSetFillColor(TX_BLACK);
         txClear();
@@ -462,7 +544,7 @@
         txTextOut(xWindowSize/2, yWindowSize/2, "creating map");
     }
 
-    void drawMapLoad()
+    void drawMapLoad(int xWindowSize, int yWindowSize)
     {
         txSetFillColor(TX_BLACK);
         txClear();
@@ -471,7 +553,7 @@
         txTextOut(xWindowSize/2, yWindowSize/2, "loading map");
     }
 
-    void drawMapSaveFound()
+    void drawMapSaveFound(int xWindowSize, int yWindowSize)
     {
         txSetFillColor(TX_BLACK);
         txClear();
@@ -509,4 +591,85 @@
                 if (GetAsyncKeyState('M')) return 1;
                 break;
         }
+    }
+
+    void drawDefinitionChoose(int* xWindowSize, int* yWindowSize)
+    {
+        txCreateWindow(2715, 1527, true);
+        while (!GetAsyncKeyState(VK_ESCAPE))
+        {
+            txSetColor(TX_RED, 2);
+            txSetFillColor(TX_BLACK);
+            txClear();
+            txSetFillColor(TX_NULL);
+            txRectangle(2715/2-*xWindowSize/2,
+                        1527/2-*yWindowSize/2,
+                        2715/2+*xWindowSize/2,
+                        1527/2+*yWindowSize/2
+                        );
+            txSetTextAlign(TA_CENTER);
+            txSetColor(TX_WHITE);
+            txTextOut(2715/2-10, 1527/2-10, "CHOOSE RESOLUTION");
+            txTextOut(2715/2, 1527/2, "ALIGN RED FRAMES TO WINDOW'S BOARDS");
+            txTextOut(2715/2+10, 1527/2+10, "LEFT/RIGHT - HORIZONTAL  UP/DOWN - VERTICAL");
+            txTextOut(2715/2+30, 1527/2+30, "ENTER - CONFIRM");
+            changeResolution(xWindowSize, yWindowSize);
+            txSleep(1);
+        }
+    }
+
+    void Tank(int x, int y, float k, int pozition)
+    {
+        if(pozition==1)
+        {//wheels
+            txSetFillColour(TX_BLACK);
+            txSetColour(TX_BLACK, 0.04*k);
+             txRectangle(x-0.6*k,y-0.8*k,x-0.4*k,y+0.8*k);
+             txRectangle(x+0.6*k,y-0.8*k,x+0.4*k,y+0.8*k);
+             //The main part
+             txSetFillColour(TX_PINK);
+             txRectangle(x-0.4*k,y-0.8*k,x+0.4*k,y+0.8*k);
+             //The Top of tank
+             txPie(x-0.4*k,y-0.2*k,x+0.4*k,y+0.6*k,180,180);
+             POINT kuk[4]=
+         {
+         {x-0.4*k,y+0.2*k},
+         {x-0.2*k,y-0.2*k},
+         {x+0.2*k,y-0.2*k},
+         {x+0.4*k,y+0.2*k}
+         };
+         txPolygon(kuk,4);
+          txRectangle(x-0.1*k,y-0.9*k,x+0.1*k,y-0.2*k);
+           txSetFillColour(TX_PINK);
+            txSetColour(TX_PINK);
+            txRectangle(x-0.38*k,y+0.23*k,x+0.38*k,y+0.17*k);
+      }
+
+
+    }
+
+
+
+    void drawTankStat(tank t[], int tankAmount, int xWindowSize, int yWindowSize)
+    {
+        txSetColor(TX_BLACK, 3);
+        txSetFillColor(RGB(191, 219, 83));
+        POINT statWindow[5]=
+        {
+            {-10, 0},
+            {xWindowSize/4, 0},
+            {xWindowSize/4+20, 20},
+            {xWindowSize/4+20, yWindowSize-50},
+            {-10, yWindowSize-50}
+        };
+        txPolygon(statWindow, 5);
+        POINT buttons[4]=
+        {
+            {-10, yWindowSize-50},
+            {xWindowSize/4+20, yWindowSize-50},
+            {xWindowSize/4+20, yWindowSize+10},
+            {-10, yWindowSize+10}
+        };
+        txSetFillColor(RGB(142, 159, 145));
+        txPolygon(buttons, 4);
     }
