@@ -25,13 +25,14 @@
     bool mapSavedChecker();
     void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize, int xWindowSize, int yWindowSize);
     void tankMovementAvailability(int n, int spd, int xOfCenter, int yOfCenter, int mapDat1, int mapDat2, double mapSize, tank t, bool a, int tankAmount);
-
+    void tankMove(tank t, int mapDat1, int mapDat2, int x,int y);
     //interface
     void interfaceOfMap(double* mapSize, int* xOfCenter, int* yOfCenter);
     void interfaceTankMoveCheck(tank t[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int tankAmount, bool mouseTank[], int* timeMouseIgnore);
     bool secretFunction(int* ss);
     bool windowSizeChooseAndConfirmation(int* xWindowSize, int* yWindowSize);
     void changeResolution(int* xWindowSize, int* yWindowSize);
+    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
 
     //drawing
     void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
@@ -115,8 +116,10 @@
                 interfaceOfMap(&mapSize, &xOfCenter, &yOfCenter);
                 drawMap(xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
                 interfaceTankMoveCheck(t, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2, tankAmount, mouseTank, &timeMouseTankIgnore);
-                Tank(xOfCenter-(mapDat1-t[0].x*2)*mapSize, yOfCenter-(mapDat2-t[0].y*2)*mapSize, mapSize, 1);
-                Tank(xOfCenter-(mapDat1-t[1].x*2)*mapSize, yOfCenter-(mapDat2-t[1].y*2)*mapSize, mapSize, 1);
+                mouseklikswhatcansupportustomovetank(&t[0],  xOfCenter,  yOfCenter, mapSize,  mapDat1,  mapDat2);
+                mouseklikswhatcansupportustomovetank(&t[1],  xOfCenter,  yOfCenter, mapSize,  mapDat1,  mapDat2);
+                Tank(xOfCenter-(mapDat1-t[0].x*2)*mapSize, yOfCenter-(mapDat2-t[0].y*2)*mapSize, mapSize, t[0].position);
+                Tank(xOfCenter-(mapDat1-t[1].x*2)*mapSize, yOfCenter-(mapDat2-t[1].y*2)*mapSize, mapSize, t[1].position);
                 drawTankStat(t, 2, xWindowSize, yWindowSize);
                 if (pi==0)
                 {
@@ -528,6 +531,93 @@
         if (*yWindowSize>1527) *yWindowSize=1527;
     }
 
+    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
+    {
+        if
+        (In  (   txMouseX(),
+                    (int)(xOfCenter-(mapDat1-(*t).x*2+1)*mapSize),
+                    (int)(xOfCenter-(mapDat1-(*t).x*2-1)*mapSize)
+                )
+            &&
+            In  (   txMouseY(),
+                    (int)(yOfCenter-(mapDat2-((*t).y-1)*2+1)*mapSize),
+                    (int)(yOfCenter-(mapDat2-((*t).y-1)*2-1)*mapSize)
+                )
+            &&
+            txMouseButtons() & 1
+            &&
+            (*t).y>0
+        )
+        {
+        (*t).y--;
+        (*t).statSpeed--;
+        (*t).position=1;
+        }
+
+        if
+        (In  (   txMouseX(),
+                    (int)(xOfCenter-(mapDat1-(*t).x*2+1)*mapSize),
+                    (int)(xOfCenter-(mapDat1-(*t).x*2-1)*mapSize)
+                )
+            &&
+            In  (   txMouseY(),
+                    (int)(yOfCenter-(mapDat2-((*t).y+1)*2+1)*mapSize),
+                    (int)(yOfCenter-(mapDat2-((*t).y+1)*2-1)*mapSize)
+                )
+            &&
+            txMouseButtons() & 1
+            &&
+            (*t).y<mapDat2
+        )
+        {
+        (*t).y++;
+        (*t).statSpeed--;
+        (*t).position=3;
+        }
+        if
+        (In  (   txMouseX(),
+                    (int)(xOfCenter-(mapDat1-((*t).x-1)*2+1)*mapSize),
+                    (int)(xOfCenter-(mapDat1-((*t).x-1)*2-1)*mapSize)
+                )
+            &&
+            In  (   txMouseY(),
+                    (int)(yOfCenter-(mapDat2-((*t).y)*2+1)*mapSize),
+                    (int)(yOfCenter-(mapDat2-((*t).y)*2-1)*mapSize)
+                )
+            &&
+            txMouseButtons() & 1
+             &&
+            (*t).x>0
+
+        )
+         {
+        (*t).x--;
+        (*t).statSpeed--;
+        (*t).position=4;
+        }
+        if
+        (In  (   txMouseX(),
+                    (int)(xOfCenter-(mapDat1-((*t).x+1)*2+1)*mapSize),
+                    (int)(xOfCenter-(mapDat1-((*t).x+1)*2-1)*mapSize)
+                )
+            &&
+            In  (   txMouseY(),
+                    (int)(yOfCenter-(mapDat2-((*t).y)*2+1)*mapSize),
+                    (int)(yOfCenter-(mapDat2-((*t).y)*2-1)*mapSize)
+                )
+            &&
+            txMouseButtons() & 1
+            &&
+            (*t).x<mapDat1
+        )
+        {
+        (*t).x++;
+        (*t).statSpeed--;
+        (*t).position=2;
+        }
+
+    }
+
     //drawing
     void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
     {
@@ -649,35 +739,112 @@
         }
     }
 
-    void Tank(int x, int y, float k, int pozition)
-    {
-        if(pozition==1)
-        {//wheels
-            txSetFillColour(TX_BLACK);
-            txSetColour(TX_BLACK, 0.04*k);
-             txRectangle(x-0.6*k,y-0.8*k,x-0.4*k,y+0.8*k);
-             txRectangle(x+0.6*k,y-0.8*k,x+0.4*k,y+0.8*k);
-             //The main part
-             txSetFillColour(TX_PINK);
-             txRectangle(x-0.4*k,y-0.8*k,x+0.4*k,y+0.8*k);
-             //The Top of tank
-             txPie(x-0.4*k,y-0.2*k,x+0.4*k,y+0.6*k,180,180);
-             POINT kuk[4]=
-         {
-         {x-0.4*k,y+0.2*k},
-         {x-0.2*k,y-0.2*k},
-         {x+0.2*k,y-0.2*k},
-         {x+0.4*k,y+0.2*k}
-         };
-         txPolygon(kuk,4);
-          txRectangle(x-0.1*k,y-0.9*k,x+0.1*k,y-0.2*k);
-           txSetFillColour(TX_PINK);
-            txSetColour(TX_PINK);
-            txRectangle(x-0.38*k,y+0.23*k,x+0.38*k,y+0.17*k);
-      }
+   void Tank(int x, int y, float k, int pozition)
+{
+    if(pozition==1)
+    {//wheels
+    txSetFillColour(TX_BLACK);
+    txSetColour(TX_BLACK, 0.04*k);
+     txRectangle(x-0.6*k,y-0.8*k,x-0.4*k,y+0.8*k);
+     txRectangle(x+0.6*k,y-0.8*k,x+0.4*k,y+0.8*k);
+     //The main part
+     txSetFillColour(TX_PINK);
+     txRectangle(x-0.4*k,y-0.8*k,x+0.4*k,y+0.8*k);
+     //The Top of tank
+     txPie(x-0.4*k,y-0.2*k,x+0.4*k,y+0.6*k,180,180);
+     POINT kuk[4]=
+     {
+     {x-0.4*k,y+0.2*k},
+     {x-0.2*k,y-0.2*k},
+     {x+0.2*k,y-0.2*k},
+     {x+0.4*k,y+0.2*k}
+     };
+     txPolygon(kuk,4);
+      txRectangle(x-0.1*k,y-0.9*k,x+0.1*k,y-0.2*k);
+       txSetFillColour(TX_PINK);
+    txSetColour(TX_PINK);
+      txRectangle(x-0.38*k,y+0.23*k,x+0.38*k,y+0.17*k);
+
 
 
     }
+    if(pozition==2)
+    {
+    //wheels
+    txSetFillColour(TX_BLACK);
+    txSetColour(TX_BLACK, 0.04*k);
+     txRectangle(x-0.8*k,y-0.6*k,x+0.8*k,y-0.4*k);
+     txRectangle(x-0.8*k,y+0.6*k,x+0.8*k,y+0.4*k);
+     //The main part
+     txSetFillColour(TX_PINK);
+     txRectangle(x-0.8*k,y+0.4*k,x+0.8*k,y-0.4*k);
+     //The Top of tank
+     txPie(x-0.6*k,y-0.4*k,x+0.2*k,y+0.4*k,90,180);
+     POINT kuk[4]=
+     {
+     {x-0.2*k,y-0.4*k},
+     {x+0.2*k,y-0.2*k},
+     {x+0.2*k,y+0.2*k},
+     {x-0.2*k,y+0.4*k}
+     };
+     txPolygon(kuk,4);
+      txRectangle(x+0.9*k,y+0.1*k,x+0.2*k,y-0.1*k);
+       txSetFillColour(TX_PINK);
+    txSetColour(TX_PINK);
+      txRectangle(x-0.23*k,y+0.38*k,x-0.17*k,y-0.38*k);
+    }
+    if(pozition==3)
+    {
+    //wheels
+    txSetFillColour(TX_BLACK);
+    txSetColour(TX_BLACK, 0.04*k);
+     txRectangle(x-0.6*k,y-0.8*k,x-0.4*k,y+0.8*k);
+     txRectangle(x+0.6*k,y-0.8*k,x+0.4*k,y+0.8*k);
+     //The main part
+     txSetFillColour(TX_PINK);
+     txRectangle(x-0.4*k,y-0.8*k,x+0.4*k,y+0.8*k);
+     //The Top of tank
+     txPie(x-0.4*k,y+0.2*k,x+0.4*k,y-0.6*k,0,180);
+     POINT kuk[4]=
+     {
+     {x-0.4*k,y-0.2*k},
+     {x-0.2*k,y+0.2*k},
+     {x+0.2*k,y+0.2*k},
+     {x+0.4*k,y-0.2*k}
+     };
+     txPolygon(kuk,4);
+      txRectangle(x-0.1*k,y+0.9*k,x+0.1*k,y+0.2*k);
+       txSetFillColour(TX_PINK);
+    txSetColour(TX_PINK);
+      txRectangle(x-0.38*k,y-0.17*k,x+0.38*k,y-0.23*k);
+    }
+     if(pozition==4)
+    {
+     //wheels
+    txSetFillColour(TX_BLACK);
+    txSetColour(TX_BLACK, 0.04*k);
+     txRectangle(x-0.8*k,y-0.6*k,x+0.8*k,y-0.4*k);
+     txRectangle(x-0.8*k,y+0.6*k,x+0.8*k,y+0.4*k);
+     //The main part
+     txSetFillColour(TX_PINK);
+     txRectangle(x-0.8*k,y+0.4*k,x+0.8*k,y-0.4*k);
+     //The Top of tank
+     txPie(x-0.2*k,y-0.4*k,x+0.6*k,y+0.4*k,270,180);
+     POINT kuk[4]=
+     {
+     {x+0.2*k,y-0.4*k},
+     {x-0.2*k,y-0.2*k},
+     {x-0.2*k,y+0.2*k},
+     {x+0.2*k,y+0.4*k}
+     };
+     txPolygon(kuk,4);
+      txRectangle(x-0.9*k,y+0.1*k,x-0.2*k,y-0.1*k);
+       txSetFillColour(TX_PINK);
+    txSetColour(TX_PINK);
+      txRectangle(x+0.23*k,y+0.38*k,x+0.17*k,y-0.38*k);
+    }
+
+}
 
     void drawTankStat(tank t[], int tankAmount, int xWindowSize, int yWindowSize)
     {
@@ -712,3 +879,4 @@
                         yOfCenter-(mapDat2-y*2-1)*mapSize
                     );
     }
+    void tankMove(tank t, int mapDat1, int mapDat2,int x  ,int y);
