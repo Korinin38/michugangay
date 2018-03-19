@@ -22,9 +22,14 @@
             statHealthMax,
             statAttack,
             statSpeed,
+            statSpeedMax,
             statAim,
             position;
+
         COLORREF color;
+
+        bool clicked,
+             attacked;
     };
 
 
@@ -34,16 +39,17 @@
     bool checkThisPoint(int n);
     bool mapSavedChecker();
     void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize, int xWindowSize, int yWindowSize);
-    void tankMovementAvailability(int n, int spd, int xOfCenter, int yOfCenter, int mapDat1, int mapDat2, double mapSize, tank t, bool a, int tankAmount);
+    void tankMovementAvailability(int n, int spd, bool turn, int xOfCenter, int yOfCenter, int mapDat1, int mapDat2, double mapSize, tank t, bool a, int tankAmount);
     void toMasOfChar(string s, char* c);
-    void moveDebug(tank t);
+
     //interface
     void interfaceOfMap(double* mapSize, int* xOfCenter, int* yOfCenter);
-    void interfaceTankMoveCheck(tank t[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int tankAmount, bool mouseTank[], int* timeMouseTankIgnore);
+    void interfaceTankMoveCheck(tank t[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int tankAmount, int* timeMouseTankIgnore, int turn);
     bool secretFunction(int* ss);
     bool windowSizeChooseAndConfirmation(int* xWindowSize, int* yWindowSize);
     void changeResolution(int* xWindowSize, int* yWindowSize);
-    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, bool* mouseTank, int* timeMouseTankMoveIgnore);
+    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int* timeMouseTankMoveIgnore);
+    void buttonEndTurn(int xWindowSize, int yWindowSize, int* timeMouseNewTurnIgnore, bool* turnChange);
 
     //drawing
     void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
@@ -55,8 +61,10 @@
     void drawTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     void Tank(int x, int y, float k, int pozition);
     void drawDefinitionChoose(int* xWindowSize, int* yWindowSize);
-    void drawTankStat(tank t[], int tankAmount, int xWindowSize, int yWindowSize);
-    void drawTankMovementGlow(int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
+    void drawTankStat(tank t[], int tankAmount, int xWindowSize, int yWindowSize, int turn);
+    void drawTankMovementGlow(bool a, int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
+    void drawTankAttackGlow(int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
+    void drawNewTurn(int number, int timeTurnChange, int xWindowSize, int yWindowSize);
 
 
     int main()
@@ -73,20 +81,28 @@
             pi=0,
             tankAmount=2,
             timeMouseTankIgnore=0,
-            timeMouseTankMoveIgnore=0;
+            timeMouseTankMoveIgnore=0,
+            timeTurnChange=0,
+            timeMouseNewTurnIgnore=0,
+            nowIsTurnOf;
 
-        bool mouseTank[tankAmount];
+        bool gameOver=0,
+             turnChange=1;
+
         tank t[tankAmount];
         for (int i = 0; i < tankAmount; i ++)
         {
-            mouseTank[i]=0;
             t[i].x=i*2;
             t[i].y=i*2;
             t[i].color=TX_BLUE;
             t[i].position=rand()%4+1;
             t[i].statHealthMax=101;
             t[i].statHealth=t[i].statHealthMax;
-            t[i].statSpeed=5;
+            t[i].statAttack=10;
+            t[i].statSpeedMax=5;
+            t[i].statAim=3;
+            t[i].clicked=0;
+            t[i].attacked=0;
         }
 
         if (!windowSizeChooseAndConfirmation(&xWindowSize, &yWindowSize)) return 0;
@@ -122,21 +138,44 @@
             mapInitializer(counter, &mapDat1, &mapDat2);
             correctMapChecker(0, mapDat1, mapDat2);
             txSleep(1000);
+            for (int i = 0; i < tankAmount; i ++)
+            {
+                mapMas[t[i].y][t[i].x]=2;
+            }
 
-            while (!GetAsyncKeyState(VK_ESCAPE)&&!GetAsyncKeyState(VK_F9)&&!GetAsyncKeyState('R'))
+            nowIsTurnOf=rand()%tankAmount;
+            while (!GetAsyncKeyState(VK_ESCAPE)&&!GetAsyncKeyState(VK_F9)&&!GetAsyncKeyState('R')&&!gameOver)
             {
                 txSetFillColor(TX_WHITE);
                 txClear();
                 interfaceOfMap(&mapSize, &xOfCenter, &yOfCenter);
                 drawMap(xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
-                interfaceTankMoveCheck(t, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2, tankAmount, mouseTank, &timeMouseTankIgnore);
+                interfaceTankMoveCheck(t, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2, tankAmount, &timeMouseTankIgnore, nowIsTurnOf);
+                if (t[nowIsTurnOf].clicked && timeMouseTankMoveIgnore==0&&t[nowIsTurnOf].statSpeed>0)
+                    {
+                        mouseklikswhatcansupportustomovetank(&t[nowIsTurnOf],  xOfCenter,  yOfCenter, mapSize,  mapDat1,  mapDat2, &timeMouseTankMoveIgnore);
+                    }
                 for(int i = 0; i < tankAmount; i ++)
                 {
-                    if (mouseTank[i] && timeMouseTankMoveIgnore==0)
-                        mouseklikswhatcansupportustomovetank(&t[i],  xOfCenter,  yOfCenter, mapSize,  mapDat1,  mapDat2, &mouseTank[i], &timeMouseTankMoveIgnore);
                     Tank(xOfCenter-(mapDat1-t[i].x*2)*mapSize, yOfCenter-(mapDat2-t[i].y*2)*mapSize, mapSize, t[i].position);
                 }
-                drawTankStat(t, 2, xWindowSize, yWindowSize);
+                drawTankStat(t, 2, xWindowSize, yWindowSize, nowIsTurnOf);
+                if (turnChange)
+                {
+                    if (timeTurnChange==0)
+                    {
+                        timeTurnChange=40;
+                        nowIsTurnOf=(nowIsTurnOf+1)%tankAmount;
+                    }
+                    if (timeTurnChange==1) turnChange=0;
+                    drawNewTurn(nowIsTurnOf+1, timeTurnChange, xWindowSize, yWindowSize);
+                    for (int i = 0; i < tankAmount; i ++)
+                    {
+                        t[i].statSpeed=t[i].statSpeedMax;
+                        t[i].clicked=0;
+                    }
+                }
+                buttonEndTurn(xWindowSize, yWindowSize, &timeMouseNewTurnIgnore, &turnChange);
                 if (pi==0)
                 {
                     if (secretFunction(&po)) pi=1;
@@ -145,6 +184,8 @@
                 //time of ignore
                 if (timeMouseTankIgnore>0) timeMouseTankIgnore--;
                 if (timeMouseTankMoveIgnore>0)timeMouseTankMoveIgnore--;
+                if (timeTurnChange>0) timeTurnChange--;
+                if (timeMouseNewTurnIgnore>0) timeMouseNewTurnIgnore--;
                 txSleep(10);
             }
         }
@@ -330,7 +371,7 @@
 
                 while (mapMas[i1][j1]!=0&&(i1>0||j1>0))
                 {
-                    if (rand()%2==0&&i1>0||j1==0) i1--;
+                    if ((rand()%2==0 && i1>0) || j1==0) i1--;
                     else j1--;
                 }
                 mapMas[i1][j1]=1;
@@ -386,54 +427,54 @@
 
     void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize, int xWindowSize, int yWindowSize)
     {
-        if (mapDat1*2*mapSize>xWindowSize-xWindowSize/4-20)
+        if (mapDat1*2*mapSize>xWindowSize-xWindowSize/4-60)
         {
-            if (*xOfCenter>(mapDat1+1)*mapSize+xWindowSize/4+20)
-                *xOfCenter=(mapDat1+1)*mapSize+xWindowSize/4+20;
-            if (*xOfCenter<xWindowSize-(mapDat1-1)*mapSize)
-                *xOfCenter=xWindowSize-(mapDat1-1)*mapSize;
+            if (*xOfCenter>(mapDat1+1)*mapSize+xWindowSize/4+40)
+                *xOfCenter=(mapDat1+1)*mapSize+xWindowSize/4+40;
+            if (*xOfCenter<xWindowSize-(mapDat1-1)*mapSize-20)
+                *xOfCenter=xWindowSize-(mapDat1-1)*mapSize-20;
         }
         else
         {
-            if (*xOfCenter<(mapDat1+1)*mapSize+xWindowSize/4+20)
+            if (*xOfCenter<(mapDat1+1)*mapSize+xWindowSize/4+40)
             {
-                *xOfCenter=(mapDat1+1)*mapSize+xWindowSize/4+20;
+                *xOfCenter=(mapDat1+1)*mapSize+xWindowSize/4+40;
             }
-            if (*xOfCenter+(mapDat1-1)*mapSize>xWindowSize)
+            if (*xOfCenter+(mapDat1-1)*mapSize>xWindowSize-20)
             {
-                *xOfCenter=xWindowSize-(mapDat1-1)*mapSize;
+                *xOfCenter=xWindowSize-(mapDat1-1)*mapSize-20;
             }
         }
-        if (mapDat2*2*mapSize>yWindowSize)
+        if (mapDat2*2*mapSize>yWindowSize-40)
         {
-            if (*yOfCenter>(mapDat2+1)*mapSize)
-                *yOfCenter=(mapDat2+1)*mapSize;
-            if (*yOfCenter<yWindowSize-(mapDat2-1)*mapSize)
-                *yOfCenter=yWindowSize-(mapDat2-1)*mapSize;
+            if (*yOfCenter>(mapDat2+1)*mapSize+20)
+                *yOfCenter=(mapDat2+1)*mapSize+20;
+            if (*yOfCenter<yWindowSize-(mapDat2-1)*mapSize-20)
+                *yOfCenter=yWindowSize-(mapDat2-1)*mapSize-20;
         }
         else
         {
-            if (*yOfCenter<(mapDat2+1)*mapSize)
+            if (*yOfCenter<(mapDat2+1)*mapSize+20)
             {
-                *yOfCenter=(mapDat2+1)*mapSize;
+                *yOfCenter=(mapDat2+1)*mapSize+20;
             }
-            if (*yOfCenter+(mapDat2-1)*mapSize>yWindowSize)
+            if (*yOfCenter+(mapDat2-1)*mapSize>yWindowSize-20)
             {
-                *yOfCenter=yWindowSize-(mapDat2-1)*mapSize;
+                *yOfCenter=yWindowSize-(mapDat2-1)*mapSize-20;
             }
         }
     }
 
-    void tankMovementAvailability(int n, int spd, int xOfCenter, int yOfCenter, int mapDat1, int mapDat2, double mapSize, tank t[], bool a, int tankAmount)
+    void tankMovementAvailability(int n, int spd, bool turn, int xOfCenter, int yOfCenter, int mapDat1, int mapDat2, double mapSize, tank t[], bool a, int tankAmount)
     {
          if (spd<0) return;
          if (n<0)return;
          for (int i = 0; i < tankAmount; i ++)
             if ((n==t[i].y*mapDat2+t[i].x)&&a==0) return;
-         if (a==0) drawTankMovementGlow(n%mapDat2, n/mapDat2, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
+         if (a==0) drawTankMovementGlow(turn, n%mapDat2, n/mapDat2, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
          for (int i = 0; i < 4; i ++)
          {
-            tankMovementAvailability(graph[n][i], spd-1, xOfCenter, yOfCenter, mapDat1, mapDat2, mapSize, t, 0, tankAmount);
+            tankMovementAvailability(graph[n][i], spd-1, turn, xOfCenter, yOfCenter, mapDat1, mapDat2, mapSize, t, 0, tankAmount);
          }
 
     }
@@ -441,11 +482,12 @@
     void toMasOfChar(string s, char* c)
     {
         int i;
-        for (i = 0; i < s.length(); i ++)
+        for (i = 0; i < s.length()+5; i ++)
         {
             c[i]=s[i];
         }
     }
+
     //interface
     void interfaceOfMap(double* mapSize, int* xOfCenter, int* yOfCenter)
     {
@@ -465,12 +507,14 @@
         if (*mapSize>35) *mapSize=35;
     }
 
-    void interfaceTankMoveCheck(tank t[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int tankAmount, bool mouseTank[], int* timeMouseTankIgnore)
+    void interfaceTankMoveCheck(tank t[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int tankAmount, int* timeMouseTankIgnore, int turn)
     {
         for (int i=0; i < tankAmount; i++)
         {
-            if (mouseTank[i]==1)
-                tankMovementAvailability(t[i].y*mapDat2+t[i].x, t[i].statSpeed, xOfCenter, yOfCenter, mapDat1, mapDat2, mapSize, t, 1, tankAmount);
+            if (t[i].clicked==1)
+            {
+                tankMovementAvailability(t[i].y*mapDat2+t[i].x, t[i].statSpeed, (turn==i), xOfCenter, yOfCenter, mapDat1, mapDat2, mapSize, t, 1, tankAmount);
+            }
             if (In  (   txMouseX(),
                         (int)(xOfCenter-(mapDat1-t[i].x*2+1)*mapSize),
                         (int)(xOfCenter-(mapDat1-t[i].x*2-1)*mapSize)
@@ -485,10 +529,10 @@
                 if (txMouseButtons() & 1 && *timeMouseTankIgnore==0)
                 {
                     *timeMouseTankIgnore=10;
-                    int c=mouseTank[i];
+                    int c=t[i].clicked;
                     if (c>0) c=1;
                     c=(c+1)%2;
-                    mouseTank[i]=c;
+                    t[i].clicked=c;
                 }
                 drawMapGlowTank(t[i], xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
             }
@@ -556,27 +600,31 @@
         if (*yWindowSize>1527) *yWindowSize=1527;
     }
 
-    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, bool* mouseTank, int* timeMouseTankMoveIgnore)
+    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int* timeMouseTankMoveIgnore)
     {
         if
         (In  (   txMouseX(),
-                    (int)(xOfCenter-(mapDat1-(*t).x*2+1)*mapSize),
-                    (int)(xOfCenter-(mapDat1-(*t).x*2-1)*mapSize)
+                    (int)(xOfCenter-(mapDat1-(*t).x*2+1)*mapSize+2),
+                    (int)(xOfCenter-(mapDat1-(*t).x*2-1)*mapSize-2)
                 )
             &&
             In  (   txMouseY(),
-                    (int)(yOfCenter-(mapDat2-((*t).y-1)*2+1)*mapSize),
-                    (int)(yOfCenter-(mapDat2-((*t).y-1)*2-1)*mapSize)
+                    (int)(yOfCenter-(mapDat2-((*t).y-1)*2+1)*mapSize+2),
+                    (int)(yOfCenter-(mapDat2-((*t).y-1)*2-1)*mapSize-2)
                 )
             &&
             txMouseButtons() & 1
             &&
             (*t).y>0
             &&
-            mapMas[(*t).x][(*t).y-1]==0
+            mapMas[(*t).y-1][(*t).x]>0
+            &&
+            mapMas[(*t).y-1][(*t).x]!=2
         )
         {
+        mapMas[(*t).y][(*t).x]=1;
         (*t).y--;
+        mapMas[(*t).y][(*t).x]=2;
         (*t).statSpeed--;
         (*t).position=1;
         (*timeMouseTankMoveIgnore)=10;
@@ -584,64 +632,81 @@
 
         if
         (In  (   txMouseX(),
-                    (int)(xOfCenter-(mapDat1-(*t).x*2+1)*mapSize),
-                    (int)(xOfCenter-(mapDat1-(*t).x*2-1)*mapSize)
+                    (int)(xOfCenter-(mapDat1-(*t).x*2+1)*mapSize+2),
+                    (int)(xOfCenter-(mapDat1-(*t).x*2-1)*mapSize-2)
                 )
             &&
             In  (   txMouseY(),
-                    (int)(yOfCenter-(mapDat2-((*t).y+1)*2+1)*mapSize),
-                    (int)(yOfCenter-(mapDat2-((*t).y+1)*2-1)*mapSize)
+                    (int)(yOfCenter-(mapDat2-((*t).y+1)*2+1)*mapSize+2),
+                    (int)(yOfCenter-(mapDat2-((*t).y+1)*2-1)*mapSize-2)
                 )
             &&
             txMouseButtons() & 1
             &&
             (*t).y<mapDat2
+            &&
+            mapMas[(*t).y+1][(*t).x]>0
+            &&
+            mapMas[(*t).y+1][(*t).x]!=2
         )
         {
+        mapMas[(*t).y][(*t).x]=1;
         (*t).y++;
+        mapMas[(*t).y][(*t).x]=2;
         (*t).statSpeed--;
         (*t).position=3;
         (*timeMouseTankMoveIgnore)=10;
         }
         if
         (In  (   txMouseX(),
-                    (int)(xOfCenter-(mapDat1-((*t).x-1)*2+1)*mapSize),
-                    (int)(xOfCenter-(mapDat1-((*t).x-1)*2-1)*mapSize)
+                    (int)(xOfCenter-(mapDat1-((*t).x-1)*2+1)*mapSize+2),
+                    (int)(xOfCenter-(mapDat1-((*t).x-1)*2-1)*mapSize-2)
                 )
             &&
             In  (   txMouseY(),
-                    (int)(yOfCenter-(mapDat2-((*t).y)*2+1)*mapSize),
-                    (int)(yOfCenter-(mapDat2-((*t).y)*2-1)*mapSize)
+                    (int)(yOfCenter-(mapDat2-((*t).y)*2+1)*mapSize+2),
+                    (int)(yOfCenter-(mapDat2-((*t).y)*2-1)*mapSize-2)
                 )
             &&
             txMouseButtons() & 1
              &&
             (*t).x>0
-
+            &&
+            mapMas[(*t).y][(*t).x-1]>0
+            &&
+            mapMas[(*t).y][(*t).x-1]!=2
         )
-         {
+        {
+        mapMas[(*t).y][(*t).x]=1;
         (*t).x--;
+        mapMas[(*t).y][(*t).x]=2;
         (*t).statSpeed--;
         (*t).position=4;
         (*timeMouseTankMoveIgnore)=10;
         }
         if
         (In  (   txMouseX(),
-                    (int)(xOfCenter-(mapDat1-((*t).x+1)*2+1)*mapSize),
-                    (int)(xOfCenter-(mapDat1-((*t).x+1)*2-1)*mapSize)
+                    (int)(xOfCenter-(mapDat1-((*t).x+1)*2+1)*mapSize+2),
+                    (int)(xOfCenter-(mapDat1-((*t).x+1)*2-1)*mapSize-2)
                 )
             &&
             In  (   txMouseY(),
-                    (int)(yOfCenter-(mapDat2-((*t).y)*2+1)*mapSize),
-                    (int)(yOfCenter-(mapDat2-((*t).y)*2-1)*mapSize)
+                    (int)(yOfCenter-(mapDat2-((*t).y)*2+1)*mapSize+2),
+                    (int)(yOfCenter-(mapDat2-((*t).y)*2-1)*mapSize-2)
                 )
             &&
             txMouseButtons() & 1
             &&
             (*t).x<mapDat1
+            &&
+            mapMas[(*t).y][(*t).x+1]>0
+            &&
+            mapMas[(*t).y][(*t).x+1]!=2
         )
         {
+        mapMas[(*t).y][(*t).x]=1;
         (*t).x++;
+        mapMas[(*t).y][(*t).x]=2;
         (*t).statSpeed--;
         (*t).position=2;
         (*timeMouseTankMoveIgnore)=10;
@@ -649,14 +714,29 @@
 
     }
 
-
-    void moveDebug(tank t, int xWindowSize, int yWindowSize)
+    void buttonEndTurn(int xWindowSize, int yWindowSize, int* timeMouseNewTurnIgnore, bool* turnChange)
     {
-        if (mapMas[t.x][t.y-1]==1)
-            txSetFillColor(TX_GREEN);
-        else
-            txSetFillColor(TX_YELLOW);
-
+        if (
+            txMouseButtons() & 1
+            &&
+            In  (
+                    txMouseX(),
+                    xWindowSize/4-125,
+                    xWindowSize/4+20
+                )
+            &&
+            In  (
+                    txMouseY(),
+                    yWindowSize-50,
+                    yWindowSize+10
+                )
+            &&
+            *timeMouseNewTurnIgnore==0
+            )
+        {
+            *timeMouseNewTurnIgnore=30;
+            *turnChange=1;
+        }
     }
 
     //drawing
@@ -780,117 +860,114 @@
         }
     }
 
-   void Tank(int x, int y, float k, int pozition)
-{
-    if(pozition==1)
-    {//wheels
-    txSetFillColour(TX_BLACK);
-    txSetColour(TX_BLACK, 0.04*k);
-     txRectangle(x-0.6*k,y-0.8*k,x-0.4*k,y+0.8*k);
-     txRectangle(x+0.6*k,y-0.8*k,x+0.4*k,y+0.8*k);
-     //The main part
-     txSetFillColour(TX_PINK);
-     txRectangle(x-0.4*k,y-0.8*k,x+0.4*k,y+0.8*k);
-     //The Top of tank
-     txPie(x-0.4*k,y-0.2*k,x+0.4*k,y+0.6*k,180,180);
-     POINT kuk[4]=
-     {
-     {x-0.4*k,y+0.2*k},
-     {x-0.2*k,y-0.2*k},
-     {x+0.2*k,y-0.2*k},
-     {x+0.4*k,y+0.2*k}
-     };
-     txPolygon(kuk,4);
-      txRectangle(x-0.1*k,y-0.9*k,x+0.1*k,y-0.2*k);
-       txSetFillColour(TX_PINK);
-    txSetColour(TX_PINK);
-      txRectangle(x-0.38*k,y+0.23*k,x+0.38*k,y+0.17*k);
-
-
-
-    }
-    if(pozition==2)
+    void Tank(int x, int y, float k, int pozition)
     {
-    //wheels
-    txSetFillColour(TX_BLACK);
-    txSetColour(TX_BLACK, 0.04*k);
-     txRectangle(x-0.8*k,y-0.6*k,x+0.8*k,y-0.4*k);
-     txRectangle(x-0.8*k,y+0.6*k,x+0.8*k,y+0.4*k);
-     //The main part
-     txSetFillColour(TX_PINK);
-     txRectangle(x-0.8*k,y+0.4*k,x+0.8*k,y-0.4*k);
-     //The Top of tank
-     txPie(x-0.6*k,y-0.4*k,x+0.2*k,y+0.4*k,90,180);
-     POINT kuk[4]=
-     {
-     {x-0.2*k,y-0.4*k},
-     {x+0.2*k,y-0.2*k},
-     {x+0.2*k,y+0.2*k},
-     {x-0.2*k,y+0.4*k}
-     };
-     txPolygon(kuk,4);
-      txRectangle(x+0.9*k,y+0.1*k,x+0.2*k,y-0.1*k);
-       txSetFillColour(TX_PINK);
-    txSetColour(TX_PINK);
-      txRectangle(x-0.23*k,y+0.38*k,x-0.17*k,y-0.38*k);
-    }
-    if(pozition==3)
-    {
-    //wheels
-    txSetFillColour(TX_BLACK);
-    txSetColour(TX_BLACK, 0.04*k);
-     txRectangle(x-0.6*k,y-0.8*k,x-0.4*k,y+0.8*k);
-     txRectangle(x+0.6*k,y-0.8*k,x+0.4*k,y+0.8*k);
-     //The main part
-     txSetFillColour(TX_PINK);
-     txRectangle(x-0.4*k,y-0.8*k,x+0.4*k,y+0.8*k);
-     //The Top of tank
-     txPie(x-0.4*k,y+0.2*k,x+0.4*k,y-0.6*k,0,180);
-     POINT kuk[4]=
-     {
-     {x-0.4*k,y-0.2*k},
-     {x-0.2*k,y+0.2*k},
-     {x+0.2*k,y+0.2*k},
-     {x+0.4*k,y-0.2*k}
-     };
-     txPolygon(kuk,4);
-      txRectangle(x-0.1*k,y+0.9*k,x+0.1*k,y+0.2*k);
-       txSetFillColour(TX_PINK);
-    txSetColour(TX_PINK);
-      txRectangle(x-0.38*k,y-0.17*k,x+0.38*k,y-0.23*k);
-    }
-     if(pozition==4)
-    {
-     //wheels
-    txSetFillColour(TX_BLACK);
-    txSetColour(TX_BLACK, 0.04*k);
-     txRectangle(x-0.8*k,y-0.6*k,x+0.8*k,y-0.4*k);
-     txRectangle(x-0.8*k,y+0.6*k,x+0.8*k,y+0.4*k);
-     //The main part
-     txSetFillColour(TX_PINK);
-     txRectangle(x-0.8*k,y+0.4*k,x+0.8*k,y-0.4*k);
-     //The Top of tank
-     txPie(x-0.2*k,y-0.4*k,x+0.6*k,y+0.4*k,270,180);
-     POINT kuk[4]=
-     {
-     {x+0.2*k,y-0.4*k},
-     {x-0.2*k,y-0.2*k},
-     {x-0.2*k,y+0.2*k},
-     {x+0.2*k,y+0.4*k}
-     };
-     txPolygon(kuk,4);
-      txRectangle(x-0.9*k,y+0.1*k,x-0.2*k,y-0.1*k);
-       txSetFillColour(TX_PINK);
-    txSetColour(TX_PINK);
-      txRectangle(x+0.23*k,y+0.38*k,x+0.17*k,y-0.38*k);
+        if(pozition==1)
+        {
+            //wheels
+            txSetFillColour(TX_BLACK);
+            txSetColour(TX_BLACK, 0.04*k);
+            txRectangle(x-0.6*k,y-0.8*k,x-0.4*k,y+0.8*k);
+            txRectangle(x+0.6*k,y-0.8*k,x+0.4*k,y+0.8*k);
+            //The main part
+            txSetFillColour(TX_PINK);
+            txRectangle(x-0.4*k,y-0.8*k,x+0.4*k,y+0.8*k);
+            //The Top of tank
+            txPie(x-0.4*k,y-0.2*k,x+0.4*k,y+0.6*k,180,180);
+            POINT kuk[4]=
+            {
+                {x-0.4*k,y+0.2*k},
+                {x-0.2*k,y-0.2*k},
+                {x+0.2*k,y-0.2*k},
+                {x+0.4*k,y+0.2*k}
+            };
+            txPolygon(kuk,4);
+            txRectangle(x-0.1*k,y-0.9*k,x+0.1*k,y-0.2*k);
+            txSetFillColour(TX_PINK);
+            txSetColour(TX_PINK);
+            txRectangle(x-0.38*k,y+0.23*k,x+0.38*k,y+0.17*k);
+        }
+        if(pozition==2)
+        {
+            //wheels
+            txSetFillColour(TX_BLACK);
+            txSetColour(TX_BLACK, 0.04*k);
+            txRectangle(x-0.8*k,y-0.6*k,x+0.8*k,y-0.4*k);
+            txRectangle(x-0.8*k,y+0.6*k,x+0.8*k,y+0.4*k);
+            //The main part
+            txSetFillColour(TX_PINK);
+            txRectangle(x-0.8*k,y+0.4*k,x+0.8*k,y-0.4*k);
+            //The Top of tank
+            txPie(x-0.6*k,y-0.4*k,x+0.2*k,y+0.4*k,90,180);
+            POINT kuk[4]=
+            {
+                {x-0.2*k,y-0.4*k},
+                {x+0.2*k,y-0.2*k},
+                {x+0.2*k,y+0.2*k},
+                {x-0.2*k,y+0.4*k}
+            };
+            txPolygon(kuk,4);
+            txRectangle(x+0.9*k,y+0.1*k,x+0.2*k,y-0.1*k);
+            txSetFillColour(TX_PINK);
+            txSetColour(TX_PINK);
+            txRectangle(x-0.23*k,y+0.38*k,x-0.17*k,y-0.38*k);
+        }
+        if(pozition==3)
+        {
+            //wheels
+            txSetFillColour(TX_BLACK);
+            txSetColour(TX_BLACK, 0.04*k);
+            txRectangle(x-0.6*k,y-0.8*k,x-0.4*k,y+0.8*k);
+            txRectangle(x+0.6*k,y-0.8*k,x+0.4*k,y+0.8*k);
+            //The main part
+            txSetFillColour(TX_PINK);
+            txRectangle(x-0.4*k,y-0.8*k,x+0.4*k,y+0.8*k);
+            //The Top of tank
+            txPie(x-0.4*k,y+0.2*k,x+0.4*k,y-0.6*k,0,180);
+            POINT kuk[4]=
+            {
+                {x-0.4*k,y-0.2*k},
+                {x-0.2*k,y+0.2*k},
+                {x+0.2*k,y+0.2*k},
+                {x+0.4*k,y-0.2*k}
+            };
+            txPolygon(kuk,4);
+            txRectangle(x-0.1*k,y+0.9*k,x+0.1*k,y+0.2*k);
+            txSetFillColour(TX_PINK);
+            txSetColour(TX_PINK);
+            txRectangle(x-0.38*k,y-0.17*k,x+0.38*k,y-0.23*k);
+        }
+         if(pozition==4)
+        {
+            //wheels
+            txSetFillColour(TX_BLACK);
+            txSetColour(TX_BLACK, 0.04*k);
+            txRectangle(x-0.8*k,y-0.6*k,x+0.8*k,y-0.4*k);
+            txRectangle(x-0.8*k,y+0.6*k,x+0.8*k,y+0.4*k);
+            //The main part
+            txSetFillColour(TX_PINK);
+            txRectangle(x-0.8*k,y+0.4*k,x+0.8*k,y-0.4*k);
+            //The Top of tank
+            txPie(x-0.2*k,y-0.4*k,x+0.6*k,y+0.4*k,270,180);
+            POINT kuk[4]=
+            {
+                {x+0.2*k,y-0.4*k},
+                {x-0.2*k,y-0.2*k},
+                {x-0.2*k,y+0.2*k},
+                {x+0.2*k,y+0.4*k}
+            };
+            txPolygon(kuk,4);
+            txRectangle(x-0.9*k,y+0.1*k,x-0.2*k,y-0.1*k);
+            txSetFillColour(TX_PINK);
+            txSetColour(TX_PINK);
+            txRectangle(x+0.23*k,y+0.38*k,x+0.17*k,y-0.38*k);
+        }
     }
 
-}
-
-    void drawTankStat(tank t[], int tankAmount, int xWindowSize, int yWindowSize)
+    void drawTankStat(tank t[], int tankAmount, int xWindowSize, int yWindowSize, int turn)
     {
         txSetColor(TX_BLACK, 3);
-        txSetFillColor(RGB(191, 219, 83));
+        txSetFillColor(RGB(142, 159, 145));
         POINT statWindow[5]=
         {
             {-10, 0},
@@ -907,42 +984,108 @@
             {xWindowSize/4+20, yWindowSize+10},
             {-10, yWindowSize+10}
         };
-        txSetFillColor(RGB(142, 159, 145));
         txPolygon(buttons, 4);
-        for (int i=0; i < tankAmount; i ++)
+        txSetFillColor(RGB(191, 219, 83));
+        if (turn==0)
+        {
+            POINT thisTankTurn[5]=
+            {
+                {-10, 0},
+                {xWindowSize/4, 0},
+                {xWindowSize/4+20, 20},
+                {xWindowSize/4+20, (yWindowSize-50)/tankAmount},
+                {-10, (yWindowSize-50)/tankAmount}
+            };
+            txPolygon(thisTankTurn, 5);
+
+        }
+        else
+        {
+            POINT thisTankTurn[4]=
+            {
+                {-10, (yWindowSize-50)/tankAmount*turn},
+                {xWindowSize/4+20, (yWindowSize-50)/tankAmount*turn},
+                {xWindowSize/4+20, (yWindowSize-50)/tankAmount*(turn+1)},
+                {-10, (yWindowSize-50)/tankAmount*(turn+1)}
+            };
+            txPolygon(thisTankTurn, 4);
+        }
+
+        if (t[turn].statSpeed==0/*&&t[turn].attacked==1*/)
+            txSetFillColor(RGB(54, 194, 41));
+        else
+            txSetFillColor(RGB(194, 194, 41));
+        txRectangle(xWindowSize/4-125, yWindowSize-50, xWindowSize/4+20, yWindowSize+10);
+        txSelectFont("Aharoni", 40);
+        txTextOut(xWindowSize/4-50, yWindowSize-40, "End turn");
+
+        for (int i = 1; i < tankAmount; i ++)
         {
             txLine(0, (yWindowSize-50)/tankAmount*i, xWindowSize/4+20, (yWindowSize-50)/tankAmount*i);
         }
+        txSetTextAlign(TA_CENTER);
         for (int i = 0; i < tankAmount; i ++)
         {
             string s;
             s=toString(t[i].statHealth)+'/'+toString(t[i].statHealthMax);
             char c1[s.length()];
             toMasOfChar(s, c1);
-            txTextOut(xWindowSize/10, (yWindowSize-50)/tankAmount*i+40, c1);
+            txSelectFont("Aharoni", 40);
+            txTextOut(xWindowSize/10, (yWindowSize-50)/tankAmount*(i+0.25), c1);
             s=toString (t[i].statAttack);
-            char c2[s.length()-1];
+            char c2[s.length()];
             toMasOfChar(s, c2);
-            txTextOut(xWindowSize/12, (yWindowSize-50)/tankAmount*i+80, c2);
+            txTextOut(xWindowSize/12, (yWindowSize-50)/tankAmount*(i+0.5), c2);
             s=toString(t[i].statSpeed)+'/';
             char c3[s.length()];
             toMasOfChar(s, c3);
-            txTextOut(xWindowSize/12, (yWindowSize-50)/tankAmount*i+120, c3);
+            txTextOut(xWindowSize/12, (yWindowSize-50)/tankAmount*(i+0.75), c3);
             s=toString(t[i].statAim);
             char c4[s.length()];
             toMasOfChar(s, c4);
-            txTextOut(xWindowSize/5, (yWindowSize-50)/tankAmount*i+120, c4);
-
+            txTextOut(xWindowSize/10, (yWindowSize-50)/tankAmount*(i+0.75), c4);
         }
     }
 
-    void drawTankMovementGlow(int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
+    void drawTankMovementGlow(bool a, int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
     {
-        txSetFillColor(TX_LIGHTBLUE);
+        if (a==1)
+            txSetFillColor(RGB(0, 162, 232));
+            else
+            txSetFillColor(RGB(192, 200, 200));
         txRectangle (   xOfCenter-(mapDat1-x*2+1)*mapSize,
                         yOfCenter-(mapDat2-y*2+1)*mapSize,
                         xOfCenter-(mapDat1-x*2-1)*mapSize,
                         yOfCenter-(mapDat2-y*2-1)*mapSize
                     );
+    }
+
+    void drawTankAttackGlow(int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
+    {
+        txSetFillColor(TX_RED);
+        txRectangle (   xOfCenter-(mapDat1-x*2+1)*mapSize,
+                        yOfCenter-(mapDat2-y*2+1)*mapSize,
+                        xOfCenter-(mapDat1-x*2-1)*mapSize,
+                        yOfCenter-(mapDat2-y*2-1)*mapSize
+                    );
+    }
+
+    void drawNewTurn(int number, int timeTurnChange, int xWindowSize, int yWindowSize)
+    {
+        txSetFillColor(TX_WHITE);
+        txSetColor(TX_BLACK);
+        if (timeTurnChange>10) timeTurnChange=10;
+        txRectangle(    xWindowSize/2-200,
+                        -60+timeTurnChange*yWindowSize/20,
+                        xWindowSize/2+200,
+                        60+timeTurnChange*yWindowSize/20
+                    );
+        string s;
+        s="Player"+toString (number)+", Your turn!";
+        char c[s.length()];
+        toMasOfChar(s, c);
+        txSetTextAlign(TA_CENTER);
+        txSelectFont("Aharoni", 40);
+        txTextOut(xWindowSize/2, timeTurnChange * yWindowSize / 20-20, c);
     }
 
