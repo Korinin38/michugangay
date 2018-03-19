@@ -36,6 +36,7 @@
     void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize, int xWindowSize, int yWindowSize);
     void tankMovementAvailability(int n, int spd, int xOfCenter, int yOfCenter, int mapDat1, int mapDat2, double mapSize, tank t, bool a, int tankAmount);
     void toMasOfChar(string s, char* c);
+    void moveDebug(tank t);
     //interface
     void interfaceOfMap(double* mapSize, int* xOfCenter, int* yOfCenter);
     void interfaceTankMoveCheck(tank t[], int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int tankAmount, bool mouseTank[], int* timeMouseTankIgnore);
@@ -571,6 +572,8 @@
             txMouseButtons() & 1
             &&
             (*t).y>0
+            &&
+            mapMas[(*t).x][(*t).y-1]==0
         )
         {
         (*t).y--;
@@ -645,6 +648,17 @@
         }
 
     }
+
+
+    void moveDebug(tank t, int xWindowSize, int yWindowSize)
+    {
+        if (mapMas[t.x][t.y-1]==1)
+            txSetFillColor(TX_GREEN);
+        else
+            txSetFillColor(TX_YELLOW);
+
+    }
+
     //drawing
     void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
     {
@@ -931,3 +945,4 @@
                         yOfCenter-(mapDat2-y*2-1)*mapSize
                     );
     }
+
