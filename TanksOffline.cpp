@@ -24,6 +24,7 @@
             statSpeed,
             statSpeedMax,
             statAim,
+            distributionPoints,
             position;
 
         COLORREF color;
@@ -39,7 +40,7 @@
     bool checkThisPoint(int n);
     bool mapSavedChecker();
     void mapBoundController(int* xOfCenter, int* yOfCenter, int mapDat1, int mapDat2, double mapSize, int xWindowSize, int yWindowSize);
-    void tankMovementAvailability(int n, int spd, bool turn, int xOfCenter, int yOfCenter, int mapDat1, int mapDat2, double mapSize, tank t, bool a, int tankAmount);
+    void tankMovementAvailability(int n, int spd, bool turn, int xOfCenter, int yOfCenter, int mapDat1, int mapDat2, double mapSize, tank* t, bool a, int tankAmount);
     void toMasOfChar(string s, char* c);
 
     //interface
@@ -48,8 +49,10 @@
     bool secretFunction(int* ss);
     bool windowSizeChooseAndConfirmation(int* xWindowSize, int* yWindowSize);
     void changeResolution(int* xWindowSize, int* yWindowSize);
-    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int* timeMouseTankMoveIgnore);
+    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int* timeMouseTankMoveIgnore, int* timeMouseTankIgnore);
     void buttonEndTurn(int xWindowSize, int yWindowSize, int* timeMouseNewTurnIgnore, bool* turnChange);
+    void buttonsAddPerk(int xWindowSize, int yWindowSize, tank* t, int tankAmount, int tankNumber, bool* mainButtonClicked, int* timeMouseButtonAddPerkIgnore);
+    bool ultimateCircleButtonInterface(int xCenter, int yCenter, int radius);
 
     //drawing
     void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
@@ -59,12 +62,13 @@
     void drawMapGlowTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     void drawMapLoad(int xWindowSize, int yWindowSize);
     void drawTank(tank t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
-    void Tank(int x, int y, float k, int pozition);
+    void Tank(int x, int y, double k, int pozition);
     void drawDefinitionChoose(int* xWindowSize, int* yWindowSize);
     void drawTankStat(tank t[], int tankAmount, int xWindowSize, int yWindowSize, int turn);
     void drawTankMovementGlow(bool a, int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     void drawTankAttackGlow(int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     void drawNewTurn(int number, int timeTurnChange, int xWindowSize, int yWindowSize);
+    void drawButtonAddPerk(int xCenter, int yCenter, int radius, COLORREF fillColor, COLORREF crossColor);
 
 
     int main()
@@ -75,8 +79,8 @@
             yWindowSize=800,
             xOfCenter=xWindowSize/2,
             yOfCenter=yWindowSize/2,
-            mapDat1=30,
-            mapDat2=30,
+            mapDat1=10,
+            mapDat2=10,
             po=0,
             pi=0,
             tankAmount=2,
@@ -84,10 +88,12 @@
             timeMouseTankMoveIgnore=0,
             timeTurnChange=0,
             timeMouseNewTurnIgnore=0,
+            timeMouseButtonAddPerkIgnore=0,
             nowIsTurnOf;
 
         bool gameOver=0,
-             turnChange=1;
+             turnChange=1,
+             mainButtonAddPerkClicked=0;
 
         tank t[tankAmount];
         for (int i = 0; i < tankAmount; i ++)
@@ -103,6 +109,7 @@
             t[i].statAim=3;
             t[i].clicked=0;
             t[i].attacked=0;
+            t[i].distributionPoints=50;
         }
 
         if (!windowSizeChooseAndConfirmation(&xWindowSize, &yWindowSize)) return 0;
@@ -153,27 +160,30 @@
                 interfaceTankMoveCheck(t, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2, tankAmount, &timeMouseTankIgnore, nowIsTurnOf);
                 if (t[nowIsTurnOf].clicked && timeMouseTankMoveIgnore==0&&t[nowIsTurnOf].statSpeed>0)
                     {
-                        mouseklikswhatcansupportustomovetank(&t[nowIsTurnOf],  xOfCenter,  yOfCenter, mapSize,  mapDat1,  mapDat2, &timeMouseTankMoveIgnore);
+                        mouseklikswhatcansupportustomovetank(&t[nowIsTurnOf],  xOfCenter,  yOfCenter, mapSize,  mapDat1,  mapDat2, &timeMouseTankMoveIgnore, &timeMouseTankIgnore);
                     }
                 for(int i = 0; i < tankAmount; i ++)
                 {
-                    Tank(xOfCenter-(mapDat1-t[i].x*2)*mapSize, yOfCenter-(mapDat2-t[i].y*2)*mapSize, mapSize, t[i].position);
+                    Tank((int)(xOfCenter-(mapDat1-t[i].x*2)*mapSize), (int)(yOfCenter-(mapDat2-t[i].y*2)*mapSize), mapSize, t[i].position);
                 }
                 drawTankStat(t, 2, xWindowSize, yWindowSize, nowIsTurnOf);
+                buttonsAddPerk(xWindowSize, yWindowSize, &t[nowIsTurnOf], tankAmount, nowIsTurnOf, &mainButtonAddPerkClicked, &timeMouseButtonAddPerkIgnore);
                 if (turnChange)
                 {
                     if (timeTurnChange==0)
                     {
                         timeTurnChange=40;
                         nowIsTurnOf=(nowIsTurnOf+1)%tankAmount;
+                        mainButtonAddPerkClicked=0;
+                        for (int i = 0; i < tankAmount; i ++)
+                        {
+                            t[i].statSpeed=t[i].statSpeedMax;
+                            t[i].clicked=0;
+                        }
+                        txSleep(50);
                     }
                     if (timeTurnChange==1) turnChange=0;
                     drawNewTurn(nowIsTurnOf+1, timeTurnChange, xWindowSize, yWindowSize);
-                    for (int i = 0; i < tankAmount; i ++)
-                    {
-                        t[i].statSpeed=t[i].statSpeedMax;
-                        t[i].clicked=0;
-                    }
                 }
                 buttonEndTurn(xWindowSize, yWindowSize, &timeMouseNewTurnIgnore, &turnChange);
                 if (pi==0)
@@ -186,7 +196,8 @@
                 if (timeMouseTankMoveIgnore>0)timeMouseTankMoveIgnore--;
                 if (timeTurnChange>0) timeTurnChange--;
                 if (timeMouseNewTurnIgnore>0) timeMouseNewTurnIgnore--;
-                txSleep(10);
+                if (timeMouseButtonAddPerkIgnore>0) timeMouseButtonAddPerkIgnore--;
+                txSleep(30);
             }
         }
         return 0;
@@ -430,37 +441,37 @@
         if (mapDat1*2*mapSize>xWindowSize-xWindowSize/4-60)
         {
             if (*xOfCenter>(mapDat1+1)*mapSize+xWindowSize/4+40)
-                *xOfCenter=(mapDat1+1)*mapSize+xWindowSize/4+40;
+                *xOfCenter=(int)((mapDat1+1)*mapSize)+xWindowSize/4+40;
             if (*xOfCenter<xWindowSize-(mapDat1-1)*mapSize-20)
-                *xOfCenter=xWindowSize-(mapDat1-1)*mapSize-20;
+                *xOfCenter=xWindowSize-(int)((mapDat1-1)*mapSize)-20;
         }
         else
         {
             if (*xOfCenter<(mapDat1+1)*mapSize+xWindowSize/4+40)
             {
-                *xOfCenter=(mapDat1+1)*mapSize+xWindowSize/4+40;
+                *xOfCenter=(int)((mapDat1+1)*mapSize)+xWindowSize/4+40;
             }
             if (*xOfCenter+(mapDat1-1)*mapSize>xWindowSize-20)
             {
-                *xOfCenter=xWindowSize-(mapDat1-1)*mapSize-20;
+                *xOfCenter=xWindowSize-(int)((mapDat1-1)*mapSize)-20;
             }
         }
         if (mapDat2*2*mapSize>yWindowSize-40)
         {
             if (*yOfCenter>(mapDat2+1)*mapSize+20)
-                *yOfCenter=(mapDat2+1)*mapSize+20;
+                *yOfCenter=(int)((mapDat2+1)*mapSize)+20;
             if (*yOfCenter<yWindowSize-(mapDat2-1)*mapSize-20)
-                *yOfCenter=yWindowSize-(mapDat2-1)*mapSize-20;
+                *yOfCenter=yWindowSize-(int)((mapDat2-1)*mapSize)-20;
         }
         else
         {
             if (*yOfCenter<(mapDat2+1)*mapSize+20)
             {
-                *yOfCenter=(mapDat2+1)*mapSize+20;
+                *yOfCenter=(int)((mapDat2+1)*mapSize)+20;
             }
             if (*yOfCenter+(mapDat2-1)*mapSize>yWindowSize-20)
             {
-                *yOfCenter=yWindowSize-(mapDat2-1)*mapSize-20;
+                *yOfCenter=yWindowSize-(int)((mapDat2-1)*mapSize)-20;
             }
         }
     }
@@ -469,8 +480,7 @@
     {
          if (spd<0) return;
          if (n<0)return;
-         for (int i = 0; i < tankAmount; i ++)
-            if ((n==t[i].y*mapDat2+t[i].x)&&a==0) return;
+         if (a==0&&(mapMas[n/mapDat2][n%mapDat2]<=0||mapMas[n/mapDat2][n%mapDat2]==2)) return;
          if (a==0) drawTankMovementGlow(turn, n%mapDat2, n/mapDat2, xOfCenter, yOfCenter, mapSize, mapDat1, mapDat2);
          for (int i = 0; i < 4; i ++)
          {
@@ -481,7 +491,7 @@
 
     void toMasOfChar(string s, char* c)
     {
-        int i;
+        unsigned int i;
         for (i = 0; i < s.length()+5; i ++)
         {
             c[i]=s[i];
@@ -499,10 +509,10 @@
         {
             *mapSize-=0.09;
         }
-        if (GetAsyncKeyState(VK_RIGHT))     *xOfCenter-=ceil(*mapSize/10);
-        if (GetAsyncKeyState(VK_LEFT))      *xOfCenter+=ceil(*mapSize/10);
-        if (GetAsyncKeyState(VK_DOWN))      *yOfCenter-=ceil(*mapSize/10);
-        if (GetAsyncKeyState(VK_UP))        *yOfCenter+=ceil(*mapSize/20);
+        if (GetAsyncKeyState(VK_RIGHT))     *xOfCenter-=(int)(*mapSize/10);
+        if (GetAsyncKeyState(VK_LEFT))      *xOfCenter+=(int)(*mapSize/10);
+        if (GetAsyncKeyState(VK_DOWN))      *yOfCenter-=(int)(*mapSize/10);
+        if (GetAsyncKeyState(VK_UP))        *yOfCenter+=(int)(*mapSize/20);
         if (*mapSize<5) *mapSize=5;
         if (*mapSize>35) *mapSize=35;
     }
@@ -600,7 +610,7 @@
         if (*yWindowSize>1527) *yWindowSize=1527;
     }
 
-    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int* timeMouseTankMoveIgnore)
+    void mouseklikswhatcansupportustomovetank(tank* t, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2, int* timeMouseTankMoveIgnore, int* timeMouseTankIgnore)
     {
         if
         (In  (   txMouseX(),
@@ -627,7 +637,8 @@
         mapMas[(*t).y][(*t).x]=2;
         (*t).statSpeed--;
         (*t).position=1;
-        (*timeMouseTankMoveIgnore)=10;
+        (*timeMouseTankMoveIgnore)=5;
+        (*timeMouseTankIgnore)+=3;
         }
 
         if
@@ -655,7 +666,8 @@
         mapMas[(*t).y][(*t).x]=2;
         (*t).statSpeed--;
         (*t).position=3;
-        (*timeMouseTankMoveIgnore)=10;
+        (*timeMouseTankMoveIgnore)=5;
+        (*timeMouseTankIgnore)+=3;
         }
         if
         (In  (   txMouseX(),
@@ -682,7 +694,8 @@
         mapMas[(*t).y][(*t).x]=2;
         (*t).statSpeed--;
         (*t).position=4;
-        (*timeMouseTankMoveIgnore)=10;
+        (*timeMouseTankMoveIgnore)=5;
+        (*timeMouseTankIgnore)+=3;
         }
         if
         (In  (   txMouseX(),
@@ -709,7 +722,8 @@
         mapMas[(*t).y][(*t).x]=2;
         (*t).statSpeed--;
         (*t).position=2;
-        (*timeMouseTankMoveIgnore)=10;
+        (*timeMouseTankMoveIgnore)=5;
+        (*timeMouseTankIgnore)+=3;
         }
 
     }
@@ -738,6 +752,100 @@
             *turnChange=1;
         }
     }
+
+    void buttonsAddPerk(int xWindowSize, int yWindowSize, tank* t, int tankAmount, int tankNumber, bool* mainButtonClicked, int* timeMouseButtonAddPerkIgnore)
+    {
+        CONST COLORREF  BU_DARKGREEN = RGB(23, 121, 53),
+                        BU_GREEN = RGB(46, 207, 37),
+                        BU_LIGHTGREEN = RGB(96, 225, 89),
+                        BU_BROWN = RGB(186, 210, 111),
+                        BU_LIGHTBROWN = RGB(250, 239, 112),
+                        BU_GREY = RGB(100, 100, 100),
+                        BU_LIGHTGREY = RGB(150, 150, 150);
+        if (*mainButtonClicked)
+        {
+            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_DARKGREEN, BU_GREEN);
+
+            //health
+            if ((*t).distributionPoints>0)
+            {
+                if (ultimateCircleButtonInterface(xWindowSize/10-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25)), xWindowSize/75))
+                {
+                    if (txMouseButtons() & 1)
+                    {
+                        drawButtonAddPerk(xWindowSize/10-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25)), xWindowSize/75, BU_DARKGREEN, BU_GREEN);
+                        if (*timeMouseButtonAddPerkIgnore==0)
+                        {
+                            (*t).statHealthMax++;
+                            (*t).statHealth++;
+                            (*t).distributionPoints--;
+                            *timeMouseButtonAddPerkIgnore=3;
+                        }
+                    }
+                    else
+                        drawButtonAddPerk(xWindowSize/10-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25)), xWindowSize/75, BU_GREEN, BU_LIGHTGREEN);
+                }
+                else
+                    drawButtonAddPerk(xWindowSize/10-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25)), xWindowSize/75, BU_BROWN, BU_LIGHTBROWN);
+            }
+            else
+                drawButtonAddPerk(xWindowSize/10-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25)), xWindowSize/75, BU_GREY, BU_LIGHTGREY);
+            //attackdamage
+            if ((*t).distributionPoints>1)
+            {
+                if (ultimateCircleButtonInterface(xWindowSize/12-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5)), xWindowSize/75))
+                {
+                    if (txMouseButtons() & 1)
+                    {
+                        drawButtonAddPerk(xWindowSize/12-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5)), xWindowSize/75, BU_DARKGREEN, BU_GREEN);
+                        if (*timeMouseButtonAddPerkIgnore==0)
+                        {
+                            (*t).statAttack++;
+                            (*t).distributionPoints-=2;
+                            *timeMouseButtonAddPerkIgnore=3;
+                        }
+                    }
+                    else
+                        drawButtonAddPerk(xWindowSize/12-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5)), xWindowSize/75, BU_GREEN, BU_LIGHTGREEN);
+                }
+                else
+                    drawButtonAddPerk(xWindowSize/12-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5)), xWindowSize/75, BU_BROWN, BU_LIGHTBROWN);
+            }
+            else
+                drawButtonAddPerk(xWindowSize/12-80, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5)), xWindowSize/75, BU_GREY, BU_LIGHTGREY);
+
+
+            if (ultimateCircleButtonInterface(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60) && txMouseButtons() & 1 && *timeMouseButtonAddPerkIgnore==0)
+            {
+                *mainButtonClicked=0;
+                *timeMouseButtonAddPerkIgnore=3;
+            }
+        }
+        else if (ultimateCircleButtonInterface(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60))
+        {
+            if (txMouseButtons() & 1)
+            {
+                drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_DARKGREEN, BU_GREEN);
+                if(*timeMouseButtonAddPerkIgnore==0)
+                    {
+                        *mainButtonClicked=1;
+                        *timeMouseButtonAddPerkIgnore=3;
+                    }
+            }
+            else
+            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_GREEN, BU_LIGHTGREEN);
+        }
+        else
+            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_BROWN, BU_LIGHTBROWN);
+    }
+
+    bool ultimateCircleButtonInterface(int xCenter, int yCenter, int radius)
+    {
+        if ((txMouseX()-xCenter)*(txMouseX()-xCenter)+(txMouseY()-yCenter)*(txMouseY()-yCenter)<radius*radius)
+            return 1;
+        else return 0;
+    }
+
 
     //drawing
     void drawMap(int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2)
@@ -770,10 +878,12 @@
         txClear();
         txSetColor(TX_WHITE);
         txSetTextAlign(TA_CENTER);
-        txSelectFont("SYSTEM_FIXED_FONT", 80);
-        txTextOut(xWindowSize/2, yWindowSize/2, "TANKS OFFLINE");
-        txSelectFont("SYSTEM_FIXED_FONT", 40);
-        txTextOut(xWindowSize/2+30, yWindowSize/2+15, "beta");
+        txSelectFont("Aharoni", 160);
+        txTextOut(xWindowSize/2, yWindowSize/2-60, "TANKS OFFLINE");
+        txSelectFont("Aharoni", 60);
+        txTextOut(xWindowSize/2+170, yWindowSize/2+45, "beta");
+        txSelectFont("Aharoni", 30);
+        txTextOut(xWindowSize/2+260, yWindowSize/2+85, "v.0.59");
 
     }
 
@@ -832,7 +942,10 @@
             case 1:
                 if (GetAsyncKeyState('M')) return 1;
                 break;
+            default:
+                break;
         }
+        return 0;
     }
 
     void drawDefinitionChoose(int* xWindowSize, int* yWindowSize)
@@ -860,7 +973,7 @@
         }
     }
 
-    void Tank(int x, int y, float k, int pozition)
+    void Tank(int x, int y, double k, int pozition)
     {
         if(pozition==1)
         {
@@ -876,10 +989,10 @@
             txPie(x-0.4*k,y-0.2*k,x+0.4*k,y+0.6*k,180,180);
             POINT kuk[4]=
             {
-                {x-0.4*k,y+0.2*k},
-                {x-0.2*k,y-0.2*k},
-                {x+0.2*k,y-0.2*k},
-                {x+0.4*k,y+0.2*k}
+                {x-(int)(0.4*k),y+(int)(0.2*k)},
+                {x-(int)(0.2*k),y-(int)(0.2*k)},
+                {x+(int)(0.2*k),y-(int)(0.2*k)},
+                {x+(int)(0.4*k),y+(int)(0.2*k)}
             };
             txPolygon(kuk,4);
             txRectangle(x-0.1*k,y-0.9*k,x+0.1*k,y-0.2*k);
@@ -901,10 +1014,10 @@
             txPie(x-0.6*k,y-0.4*k,x+0.2*k,y+0.4*k,90,180);
             POINT kuk[4]=
             {
-                {x-0.2*k,y-0.4*k},
-                {x+0.2*k,y-0.2*k},
-                {x+0.2*k,y+0.2*k},
-                {x-0.2*k,y+0.4*k}
+                {x-(int)(0.2*k),y-(int)(0.4*k)},
+                {x+(int)(0.2*k),y-(int)(0.2*k)},
+                {x+(int)(0.2*k),y+(int)(0.2*k)},
+                {x-(int)(0.2*k),y+(int)(0.4*k)}
             };
             txPolygon(kuk,4);
             txRectangle(x+0.9*k,y+0.1*k,x+0.2*k,y-0.1*k);
@@ -926,10 +1039,10 @@
             txPie(x-0.4*k,y+0.2*k,x+0.4*k,y-0.6*k,0,180);
             POINT kuk[4]=
             {
-                {x-0.4*k,y-0.2*k},
-                {x-0.2*k,y+0.2*k},
-                {x+0.2*k,y+0.2*k},
-                {x+0.4*k,y-0.2*k}
+                {x-(int)(0.4*k),y-(int)(0.2*k)},
+                {x-(int)(0.2*k),y+(int)(0.2*k)},
+                {x+(int)(0.2*k),y+(int)(0.2*k)},
+                {x+(int)(0.4*k),y-(int)(0.2*k)}
             };
             txPolygon(kuk,4);
             txRectangle(x-0.1*k,y+0.9*k,x+0.1*k,y+0.2*k);
@@ -951,10 +1064,10 @@
             txPie(x-0.2*k,y-0.4*k,x+0.6*k,y+0.4*k,270,180);
             POINT kuk[4]=
             {
-                {x+0.2*k,y-0.4*k},
-                {x-0.2*k,y-0.2*k},
-                {x-0.2*k,y+0.2*k},
-                {x+0.2*k,y+0.4*k}
+                {x+(int)(0.2*k),y-(int)(0.4*k)},
+                {x-(int)(0.2*k),y-(int)(0.2*k)},
+                {x-(int)(0.2*k),y+(int)(0.2*k)},
+                {x+(int)(0.2*k),y+(int)(0.4*k)}
             };
             txPolygon(kuk,4);
             txRectangle(x-0.9*k,y+0.1*k,x-0.2*k,y-0.1*k);
@@ -1011,26 +1124,33 @@
             txPolygon(thisTankTurn, 4);
         }
 
-        if (t[turn].statSpeed==0/*&&t[turn].attacked==1*/)
+        if (t[turn].statSpeed==0&&t[turn].attacked==1)
             txSetFillColor(RGB(54, 194, 41));
         else
             txSetFillColor(RGB(194, 194, 41));
         txRectangle(xWindowSize/4-125, yWindowSize-50, xWindowSize/4+20, yWindowSize+10);
         txSelectFont("Aharoni", 40);
+        txSetTextAlign(TA_CENTER);
         txTextOut(xWindowSize/4-50, yWindowSize-40, "End turn");
 
         for (int i = 1; i < tankAmount; i ++)
         {
             txLine(0, (yWindowSize-50)/tankAmount*i, xWindowSize/4+20, (yWindowSize-50)/tankAmount*i);
         }
-        txSetTextAlign(TA_CENTER);
+        txSelectFont("Aharoni", 40);
+        txSetTextAlign(TA_LEFT);
         for (int i = 0; i < tankAmount; i ++)
         {
             string s;
+            txSetTextAlign(TA_RIGHT);
+            s=toString(t[i].distributionPoints)+" points";
+            char c0[s.length()];
+            toMasOfChar(s, c0);
+            txTextOut(xWindowSize/4-20, (yWindowSize-50)/tankAmount*(i+0.05), c0);
+            txSetTextAlign(TA_LEFT);
             s=toString(t[i].statHealth)+'/'+toString(t[i].statHealthMax);
             char c1[s.length()];
             toMasOfChar(s, c1);
-            txSelectFont("Aharoni", 40);
             txTextOut(xWindowSize/10, (yWindowSize-50)/tankAmount*(i+0.25), c1);
             s=toString (t[i].statAttack);
             char c2[s.length()];
@@ -1089,3 +1209,26 @@
         txTextOut(xWindowSize/2, timeTurnChange * yWindowSize / 20-20, c);
     }
 
+    void drawButtonAddPerk(int xCenter, int yCenter, int radius, COLORREF fillColor, COLORREF crossColor)
+    {
+        txSetColor(TX_BLACK, 3);
+        txSetFillColor(fillColor);
+        txCircle(xCenter, yCenter, radius);
+        txSetFillColor(crossColor);
+        POINT cross[12]=
+        {
+            {xCenter+radius/4, yCenter-radius*13/20},
+            {xCenter+radius/4, yCenter-radius/4},
+            {xCenter+radius*13/20, yCenter-radius/4},
+            {xCenter+radius*13/20, yCenter+radius/4},
+            {xCenter+radius/4, yCenter+radius/4},
+            {xCenter+radius/4, yCenter+radius*13/20},
+            {xCenter-radius/4, yCenter+radius*13/20},
+            {xCenter-radius/4, yCenter+radius/4},
+            {xCenter-radius*13/20, yCenter+radius/4},
+            {xCenter-radius*13/20, yCenter-radius/4},
+            {xCenter-radius/4, yCenter-radius/4},
+            {xCenter-radius/4, yCenter-radius*13/20}
+        };
+        txPolygon(cross, 12);
+    }
