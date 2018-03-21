@@ -969,7 +969,7 @@
             //health
             if ((*t).distributionPoints>0)
             {
-                if (ultimateCircleButtonInterface(xWindowSize/10-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/450))
+                if (ultimateCircleButtonInterface(xWindowSize/10-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75))
                 {
                     if (txMouseButtons() & 1)
                     {
