@@ -72,10 +72,10 @@
     void drawTankMovementGlow(bool a, int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     void drawTankAttackGlow(int x, int y, int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2);
     void drawNewTurn(int number, int timeTurnChange, int xWindowSize, int yWindowSize);
-    void drawButtonAddPerk(int xCenter, int yCenter, int radius, COLORREF fillColor, COLORREF crossColor);
+    void drawButtonAddPerk(int xCenter, int yCenter, int radius, COLORREF fillColor, COLORREF crossColor, int thickness);
     void drawMenu(int XWINDOWSIZE, int YWINDOWSIZE);
     void drawButtonForMenuExit(int XCENTER, int YCENTER, int RADIUS, COLORREF FILLCOLOR, COLORREF CROSSCOLOR);
-    void drawButtonForMenuStartGame(int XCENTER, int YCENTER, COLORREF COLOR);
+    void drawButtonForMenuStartGame(int XCENTER, int YCENTER, COLORREF COLOR, bool notStartButContinue);
     void drawButtonForMenuMapRedactor(int XCENTER, int YCENTER, COLORREF COLOR, bool comingSoon=false);
     void drawHP(int x,int y, double k);
 
@@ -104,23 +104,10 @@
         bool    menuIn=0,
                 gameOver=0,
                 turnChange=1,
-                mainButtonAddPerkClicked=0;
+                mainButtonAddPerkClicked=0,
+                iSwearItIsLast=0;
 
         tank t[tankAmount];
-        for (int i = 0; i < tankAmount; i ++)
-        {
-            t[i].x=(mapDat1-1)*i;
-            t[i].y=(mapDat2-1)*i;
-            t[i].position=rand()%4+1;
-            t[i].statHealthMax=100;
-            t[i].statHealth=t[i].statHealthMax;
-            t[i].statAttack=10;
-            t[i].statSpeedMax=2;
-            t[i].statAim=2;
-            t[i].clicked=0;
-            t[i].attacked=0;
-            t[i].distributionPoints=50;
-        }
             t[0].color=TX_BLUE;
             t[1].color=TX_RED;
 
@@ -134,43 +121,61 @@
         while(interfaceMenuButtons(xWindowSize, yWindowSize, &menuIn)&&!GetAsyncKeyState(VK_ESCAPE))
         {
             drawMenu(xWindowSize, yWindowSize);
-            drawHP(xWindowSize/2, yWindowSize/2, 30);
-            drawButtonForMenuStartGame(xWindowSize/4, yWindowSize/2, RGB(16, 127, 135));
+            drawButtonForMenuStartGame(xWindowSize/4, yWindowSize/2, RGB(16, 127, 135), iSwearItIsLast);
             drawButtonForMenuMapRedactor(xWindowSize*3/4, yWindowSize/2, RGB(16, 127, 135), true);
             drawButtonForMenuExit(xWindowSize-50, 50, 40, RGB(237, 28, 36), RGB(215, 215, 215));
-            while (menuIn)
+            if (GetAsyncKeyState('R'))
+                iSwearItIsLast=0;
+            if (menuIn)
             {
-                txSleep(500);
-                bool counter=0, counterWhile=0;
-                if (mapSavedChecker())
+                if (iSwearItIsLast==0)
                 {
-                    drawMapSaveFound(xWindowSize, yWindowSize);
-                    while (counterWhile==0)
+                    for (int i = 0; i < tankAmount; i ++)
                     {
-                        if (GetAsyncKeyState('Y'))
+                        t[i].x=(mapDat1-1)*i;
+                        t[i].y=(mapDat2-1)*i;
+                        t[i].position=rand()%4+1;
+                        t[i].statHealthMax=100;
+                        t[i].statHealth=t[i].statHealthMax;
+                        t[i].statAttack=10;
+                        t[i].statSpeedMax=2;
+                        t[i].statAim=2;
+                        t[i].clicked=0;
+                        t[i].attacked=0;
+                        t[i].distributionPoints=50;
+                    }
+                    bool counter=0, counterWhile=0;
+                    if (mapSavedChecker())
+                    {
+                        drawMapSaveFound(xWindowSize, yWindowSize);
+                        while (counterWhile==0)
                         {
-                            counter=1;
-                            counterWhile=1;
-                        }
-                        if (GetAsyncKeyState('N'))
-                        {
-                            counter=0;
-                            counterWhile=1;
+                            if (GetAsyncKeyState('Y'))
+                            {
+                                counter=1;
+                                counterWhile=1;
+                            }
+                            if (GetAsyncKeyState('N'))
+                            {
+                                counter=0;
+                                counterWhile=1;
+                            }
                         }
                     }
+                    mapInitializer(counter, &mapDat1, &mapDat2);
+                    drawMapInit(xWindowSize, yWindowSize);
+                    txSleep(500);
+                    drawMapLoad(xWindowSize, yWindowSize);
+                    correctMapChecker(0, mapDat1, mapDat2);
+                    txSleep(1000);
+                    for (int i = 0; i < tankAmount; i ++)
+                    {
+                        mapMas[t[i].y][t[i].x]=2;
+                    }
+                    nowIsTurnOf=rand()%tankAmount;
+                    iSwearItIsLast=1;
                 }
-                drawMapInit(xWindowSize, yWindowSize);
-                drawMapLoad(xWindowSize, yWindowSize);
-                mapInitializer(counter, &mapDat1, &mapDat2);
-                correctMapChecker(0, mapDat1, mapDat2);
-                txSleep(1000);
-                for (int i = 0; i < tankAmount; i ++)
-                {
-                    mapMas[t[i].y][t[i].x]=2;
-                }
-
-                nowIsTurnOf=rand()%tankAmount;
-                while (!GetAsyncKeyState('R')&&menuIn)
+                while (iSwearItIsLast&&menuIn)
                 {
                     txSetFillColor(TX_WHITE);
                     txClear();
@@ -207,6 +212,7 @@
                         drawNewTurn(nowIsTurnOf+1, timeTurnChange, xWindowSize, yWindowSize);
                     }
                     buttonEndTurn(xWindowSize/4-50, yWindowSize-20, &timeMouseNewTurnIgnore, &turnChange);
+                    if (GetAsyncKeyState(VK_ESCAPE)) menuIn=0;
                     if (pi==0)
                     {
                         if (secretFunction(&po)) pi=1;
@@ -221,6 +227,11 @@
                     if (timeMouseButtonAddPerkIgnore>0) timeMouseButtonAddPerkIgnore--;
                     txSleep(30);
                     buttonEndGame(5, yWindowSize-20, &menuIn);
+                    if (GetAsyncKeyState('R'))
+                    {
+                        iSwearItIsLast=0;
+                        menuIn=0;
+                    }
                 }
             }
             txSleep(10);
@@ -577,7 +588,7 @@
     }
 
     void donotshootitisme(tank t[],int tankAmount,int xOfCenter, int yOfCenter, double mapSize, int mapDat1, int mapDat2,int tankNumber)
-    { //1
+    {
         int range=1;
         bool x1=1,x2=1,x3=1,x4=1;
         while(range<=t[tankNumber].statAim)
@@ -952,16 +963,17 @@
                         BU_LIGHTGREY = RGB(150, 150, 150);
         if (*mainButtonClicked)
         {
-            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_DARKGREEN, BU_GREEN);
-
+            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_DARKGREEN, BU_GREEN, xWindowSize/350);
+            txSetTextAlign(TA_CENTER);
+            txSelectFont("Aharoni", 20);
             //health
             if ((*t).distributionPoints>0)
             {
-                if (ultimateCircleButtonInterface(xWindowSize/10-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75))
+                if (ultimateCircleButtonInterface(xWindowSize/10-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/450))
                 {
                     if (txMouseButtons() & 1)
                     {
-                        drawButtonAddPerk(xWindowSize/10-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75, BU_DARKGREEN, BU_GREEN);
+                        drawButtonAddPerk(xWindowSize/10-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75, BU_DARKGREEN, BU_GREEN, xWindowSize/450);
                         if (*timeMouseButtonAddPerkIgnore==0)
                         {
                             (*t).statHealthMax++;
@@ -971,21 +983,23 @@
                         }
                     }
                     else
-                        drawButtonAddPerk(xWindowSize/10-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75, BU_GREEN, BU_LIGHTGREEN);
+                        drawButtonAddPerk(xWindowSize/10-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75, BU_GREEN, BU_LIGHTGREEN, xWindowSize/450);
                 }
                 else
-                    drawButtonAddPerk(xWindowSize/10-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75, BU_BROWN, BU_LIGHTBROWN);
+                    drawButtonAddPerk(xWindowSize/10-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75, BU_BROWN, BU_LIGHTBROWN, xWindowSize/450);
             }
             else
-                drawButtonAddPerk(xWindowSize/10-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75, BU_GREY, BU_LIGHTGREY);
+                drawButtonAddPerk(xWindowSize/10-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15, xWindowSize/75, BU_GREY, BU_LIGHTGREY, xWindowSize/450);
+            txTextOut(xWindowSize/10-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.25))+15+xWindowSize/75, "1 p");
+
             //attackdamage
             if ((*t).distributionPoints>1)
             {
-                if (ultimateCircleButtonInterface(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75))
+                if (ultimateCircleButtonInterface(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75))
                 {
                     if (txMouseButtons() & 1)
                     {
-                        drawButtonAddPerk(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75, BU_DARKGREEN, BU_GREEN);
+                        drawButtonAddPerk(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75, BU_DARKGREEN, BU_GREEN, xWindowSize/450);
                         if (*timeMouseButtonAddPerkIgnore==0)
                         {
                             (*t).statAttack++;
@@ -994,22 +1008,23 @@
                         }
                     }
                     else
-                        drawButtonAddPerk(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75, BU_GREEN, BU_LIGHTGREEN);
+                        drawButtonAddPerk(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75, BU_GREEN, BU_LIGHTGREEN, xWindowSize/450);
                 }
                 else
-                    drawButtonAddPerk(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75, BU_BROWN, BU_LIGHTBROWN);
+                    drawButtonAddPerk(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75, BU_BROWN, BU_LIGHTBROWN, xWindowSize/450);
             }
             else
-                drawButtonAddPerk(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75, BU_GREY, BU_LIGHTGREY);
+                drawButtonAddPerk(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15, xWindowSize/75, BU_GREY, BU_LIGHTGREY, xWindowSize/450);
+            txTextOut(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.5))+15+xWindowSize/75, "2 p");
 
             //speed
             if ((*t).distributionPoints>49)
             {
-                if (ultimateCircleButtonInterface(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75))
+                if (ultimateCircleButtonInterface(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75))
                 {
                     if (txMouseButtons() & 1)
                     {
-                        drawButtonAddPerk(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_DARKGREEN, BU_GREEN);
+                        drawButtonAddPerk(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_DARKGREEN, BU_GREEN, xWindowSize/450);
                         if (*timeMouseButtonAddPerkIgnore==0)
                         {
                             (*t).statSpeed++;
@@ -1019,21 +1034,23 @@
                         }
                     }
                     else
-                        drawButtonAddPerk(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_GREEN, BU_LIGHTGREEN);
+                        drawButtonAddPerk(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_GREEN, BU_LIGHTGREEN, xWindowSize/450);
                 }
                 else
-                    drawButtonAddPerk(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_BROWN, BU_LIGHTBROWN);
+                    drawButtonAddPerk(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_BROWN, BU_LIGHTBROWN, xWindowSize/450);
             }
             else
-                drawButtonAddPerk(xWindowSize/12-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_GREY, BU_LIGHTGREY);
+                drawButtonAddPerk(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_GREY, BU_LIGHTGREY, xWindowSize/450);
+            txTextOut(xWindowSize/12-40-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15+xWindowSize/75, "50 p");
+
             //aim
             if ((*t).distributionPoints>74)
             {
-                if (ultimateCircleButtonInterface(xWindowSize/6-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75))
+                if (ultimateCircleButtonInterface(xWindowSize/4-60-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75))
                 {
                     if (txMouseButtons() & 1)
                     {
-                        drawButtonAddPerk(xWindowSize/6-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_DARKGREEN, BU_GREEN);
+                        drawButtonAddPerk(xWindowSize/4-60-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_DARKGREEN, BU_GREEN, xWindowSize/450);
                         if (*timeMouseButtonAddPerkIgnore==0)
                         {
                             (*t).statAim++;
@@ -1042,14 +1059,14 @@
                         }
                     }
                     else
-                        drawButtonAddPerk(xWindowSize/6-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_GREEN, BU_LIGHTGREEN);
+                        drawButtonAddPerk(xWindowSize/4-60-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_GREEN, BU_LIGHTGREEN, xWindowSize/450);
                 }
                 else
-                    drawButtonAddPerk(xWindowSize/6-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_BROWN, BU_LIGHTBROWN);
+                    drawButtonAddPerk(xWindowSize/4-60-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_BROWN, BU_LIGHTBROWN, xWindowSize/450);
             }
             else
-                drawButtonAddPerk(xWindowSize/6-10-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_GREY, BU_LIGHTGREY);
-
+                drawButtonAddPerk(xWindowSize/4-60-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15, xWindowSize/75, BU_GREY, BU_LIGHTGREY, xWindowSize/450);
+            txTextOut(xWindowSize/4-60-xWindowSize/75, (int)((yWindowSize-50)/tankAmount*(tankNumber+0.75))+15+xWindowSize/75, "75 p");
 
             if (ultimateCircleButtonInterface(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60) && txMouseButtons() & 1 && *timeMouseButtonAddPerkIgnore==0)
             {
@@ -1061,7 +1078,7 @@
         {
             if (txMouseButtons() & 1)
             {
-                drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_DARKGREEN, BU_GREEN);
+                drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_DARKGREEN, BU_GREEN, xWindowSize/350);
                 if(*timeMouseButtonAddPerkIgnore==0)
                     {
                         *mainButtonClicked=1;
@@ -1069,10 +1086,10 @@
                     }
             }
             else
-            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_GREEN, BU_LIGHTGREEN);
+            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_GREEN, BU_LIGHTGREEN, xWindowSize/350);
         }
         else
-            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_BROWN, BU_LIGHTBROWN);
+            drawButtonAddPerk(xWindowSize*14/60, (yWindowSize-50)/tankAmount*(tankNumber+1)-xWindowSize/60-20, xWindowSize/60, BU_BROWN, BU_LIGHTBROWN, xWindowSize/350);
     }
 
     bool ultimateCircleButtonInterface(int xCenter, int yCenter, int radius)
@@ -1100,6 +1117,22 @@
         if (ultimateCircleButtonInterface(xWindowSize-50, 50, 40)&&txMouseButtons()&1)
             return 0;
         return 1;
+    }
+
+    bool secretFunction(int* ss)
+    {
+        switch(*ss)
+        {
+            case 0:
+                if (GetAsyncKeyState('U')) *ss++;
+                break;
+            case 1:
+                if (GetAsyncKeyState('M')) return 1;
+                break;
+            default:
+                break;
+        }
+        return 0;
     }
 
     //drawing
@@ -1185,22 +1218,6 @@
         txSetColor(TX_BLACK);
         txSetFillColor(t.color);
         txCircle(xOfCenter-(mapDat1-t.x*2)*mapSize, yOfCenter-(mapDat2-t.y*2)*mapSize, mapSize/3);
-    }
-
-    bool secretFunction(int* ss)
-    {
-        switch(*ss)
-        {
-            case 0:
-                if (GetAsyncKeyState('U')) *ss++;
-                break;
-            case 1:
-                if (GetAsyncKeyState('M')) return 1;
-                break;
-            default:
-                break;
-        }
-        return 0;
     }
 
     void drawDefinitionChoose(int* xWindowSize, int* yWindowSize)
@@ -1410,6 +1427,7 @@
             char c1[s.length()];
             toMasOfChar(s, c1);
             txTextOut(xWindowSize/10, (yWindowSize-50)/tankAmount*(i+0.25), c1);
+            drawHP(xWindowSize/10-15, (yWindowSize-50)/tankAmount*(i+0.25)+11, 11);
             s=toString (t[i].statAttack);
             char c2[s.length()];
             toMasOfChar(s, c2);
@@ -1421,7 +1439,7 @@
             s=toString(t[i].statAim);
             char c4[s.length()];
             toMasOfChar(s, c4);
-            txTextOut(xWindowSize/6, (yWindowSize-50)/tankAmount*(i+0.75), c4);
+            txTextOut(xWindowSize/4-20, (yWindowSize-50)/tankAmount*(i+0.75), c4);
         }
     }
 
@@ -1467,8 +1485,10 @@
         txTextOut(xWindowSize/2, timeTurnChange * yWindowSize / 20-20, c);
     }
 
-    void drawButtonAddPerk(int xCenter, int yCenter, int radius, COLORREF fillColor, COLORREF crossColor)
+    void drawButtonAddPerk(int xCenter, int yCenter, int radius, COLORREF fillColor, COLORREF crossColor, int thickness)
     {
+        if (thickness<1) thickness=1;
+        if (thickness>5) thickness=5;
         txSetColor(TX_BLACK, 3);
         txSetFillColor(fillColor);
         txCircle(xCenter, yCenter, radius);
@@ -1533,22 +1553,31 @@
         txPolygon(cross, 12);
     }
 
-    void drawButtonForMenuStartGame(int XCENTER, int YCENTER, COLORREF COLOR)
+    void drawButtonForMenuStartGame(int XCENTER, int YCENTER, COLORREF COLOR, bool notStartButContinue)
     {
         txSetColor(TX_BLACK, 3);
         txSetFillColor(COLOR);
-        txSelectFont("Aharoni", 30);
-        txRectangle(XCENTER-60,
-                    YCENTER-20,
-                    XCENTER+60,
-                    YCENTER+20
+        txSelectFont("Aharoni", 50);
+        txRectangle(XCENTER-120,
+                    YCENTER-60,
+                    XCENTER+120,
+                    YCENTER+60
                     );
-        txDrawText( XCENTER-60,
-                    YCENTER-20,
-                    XCENTER+60,
-                    YCENTER+20,
-                    "Start Game"
-                    );
+        txSetTextAlign(TA_CENTER);
+        if (notStartButContinue)
+            txDrawText( XCENTER-120,
+                        YCENTER-60,
+                        XCENTER+120,
+                        YCENTER+60,
+                        "Continue"
+                        );
+        else
+            txDrawText( XCENTER-120,
+                        YCENTER-60,
+                        XCENTER+120,
+                        YCENTER+60,
+                        "Start Game"
+                        );
 
     }
 
@@ -1558,25 +1587,26 @@
         txSetFillColor(COLOR);
         if (comingSoon)
             txSetFillColor(RGB(50, 50, 50));
-        txSelectFont("Aharoni", 30);
-        txRectangle(XCENTER-60,
-                    YCENTER-20,
-                    XCENTER+60,
-                    YCENTER+20
+        txSelectFont("Aharoni", 50);
+            txSetTextAlign(TA_CENTER);
+        txRectangle(XCENTER-120,
+                    YCENTER-60,
+                    XCENTER+120,
+                    YCENTER+60
                     );
-        txDrawText( XCENTER-60,
-                    YCENTER-20,
-                    XCENTER+60,
-                    YCENTER+20,
+        txDrawText( XCENTER-120,
+                    YCENTER-60,
+                    XCENTER+120,
+                    YCENTER+60,
                     "Card Redactor"
                     );
         if (comingSoon)
         {
-        txSelectFont("Aharoni", 28);
-            txDrawText( XCENTER-50,
-                        YCENTER+20,
-                        XCENTER+50,
-                        YCENTER+50,
+            txSelectFont("Aharoni", 40);
+            txDrawText( XCENTER-100,
+                        YCENTER+60,
+                        XCENTER+100,
+                        YCENTER+110,
                         "Coming soon"
                         );
         }
