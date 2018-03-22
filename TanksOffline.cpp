@@ -199,7 +199,7 @@
                         {
                             t[i].statHealth=0;
                             t[i].deathTime=3;
-                            mapMas[t[i].y][t[i].x]=0;
+                            mapMas[t[i].y][t[i].x]=1;
                             t[i].x=-1;
                             t[i].y=-1;
                         }
@@ -901,7 +901,7 @@
             &&
             txMouseButtons() & 1
             &&
-            (*t).y<mapDat2
+            (*t).y<mapDat1
             &&
             mapMas[(*t).y+1][(*t).x]>0
             &&
@@ -957,7 +957,7 @@
             &&
             txMouseButtons() & 1
             &&
-            (*t).x<mapDat1
+            (*t).x<mapDat2
             &&
             mapMas[(*t).y][(*t).x+1]>0
             &&
