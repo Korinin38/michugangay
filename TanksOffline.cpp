@@ -123,6 +123,7 @@
         if (!windowSizeChooseAndConfirmation(&xWindowSize, &yWindowSize)) return 0;
         srand(time(NULL));
         txCreateWindow (xWindowSize, yWindowSize);
+        txBegin();
         xOfCenter=xWindowSize/2;
         yOfCenter=yWindowSize/2;
         drawWelcome(xWindowSize, yWindowSize);
