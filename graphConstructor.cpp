@@ -191,7 +191,8 @@
             prX = -xCenter/mapSize;
             switch(figure)
             {
-                case 0:
+                case 0: //parabola
+                //{
                     prX = -xCenter/mapSize;
                     for (int i = 1; i <=xWindowSize; i ++)
                     {
@@ -239,7 +240,9 @@
                     txSelectFont("Arial", 20);
                     txDrawText(0, yWindowSize-20, s.length()*10, yWindowSize, c, DT_LEFT);
                     break;
-                case 1:
+                //}
+                case 1: //circle
+                //{
                     txSetFillColor(TX_NULL);
                     txCircle(xCenter+crX*mapSize, yCenter-crY*mapSize, crR*mapSize);
 
@@ -278,7 +281,9 @@
                     txSelectFont("Arial", 20);
                     txDrawText(0, yWindowSize-20, s.length()*10, yWindowSize, c, DT_LEFT);
                     break;
-                case 2:
+                //}
+                case 2: //sinusoide
+                //{
                     sinX = -xCenter/mapSize-sinB;
                     for (int i = 1; i <=xWindowSize; i ++)
                     {
@@ -317,17 +322,24 @@
                         mouseClickedV=false;
                         if (!txMouseButtons()&1) mouseClickedU=false;
                     }
-                    s="y=sin (";
-                    if (sinT==1) s+="x";
-                    else s+=pointAfterZero(toString(sinT), roundn)+"x";
-                    if (sinB==0) s+=")";
-                    else if (sinB>0) s+="+"+pointAfterZero(toString(sinB), roundn)+")";
-                    else             s+=pointAfterZero(toString(sinB), roundn)+")";
+                    s="y=";
+                    if (sinA==0) s+="0";
+                    else
+                    {
+
+                        s+=pointAfterZero(toString(sinA), roundn+1)+"sin (";
+                        if (sinT==1) s+="x";
+                        else s+=pointAfterZero(toString(sinT), roundn+1)+"x";
+                        if (sinB==0) s+=")";
+                        else if (sinB>0) s+="+"+pointAfterZero(toString(sinB), roundn+1)+")";
+                        else             s+=pointAfterZero(toString(sinB), roundn+1)+")";
+                    }
                     toMasOfChar(s, c);
                     txRectangle(0, yWindowSize-20, s.length()*10, yWindowSize);
                     txSelectFont("Arial", 20);
                     txDrawText(0, yWindowSize-20, s.length()*10, yWindowSize, c, DT_LEFT);
                     break;
+                //}
             }
             txSetColor(TX_BLACK);
             txSetFillColor(TX_WHITE);
